@@ -1,0 +1,10 @@
+{
+  "description": "This user-friendly village government website offers residents and visitors essential information, including demographics, news updates, and a map of the village.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
