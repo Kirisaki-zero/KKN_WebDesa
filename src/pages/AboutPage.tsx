@@ -206,8 +206,50 @@ export default function AboutPage() {
           ))}
         </div>
 
+        {/* ── Additional Info Sections ── */}
+        
+        <div id="profil-desa" className="mt-20 pt-10 border-t border-emerald-900/10">
+          <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'var(--font-display)', color: '#0c1a30' }}>Profil Desa</h2>
+          <p className="text-sm leading-relaxed" style={{ color: '#4a6475' }}>
+            Desa Banjarejo adalah sebuah desa agraris yang terletak di Kecamatan Panekan, Kabupaten Magetan. Dengan luas wilayah sekitar 147 Hektar, desa ini menjadi rumah bagi lebih dari 2.800 jiwa yang mayoritas bermatapencaharian sebagai petani dan pelaku UMKM. Desa Banjarejo memiliki tiga dukuh utama: Ngasem, Ngrombo, dan Genjeng, masing-masing dengan keunikan budaya dan potensi ekonomi yang khas.
+          </p>
+        </div>
+
+        <div id="apbdes" className="mt-12 pt-10 border-t border-emerald-900/10">
+          <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'var(--font-display)', color: '#0c1a30' }}>APBDes Publik</h2>
+          <p className="text-sm leading-relaxed mb-4" style={{ color: '#4a6475' }}>
+            Sebagai bentuk transparansi pemerintahan, berikut adalah ringkasan Anggaran Pendapatan dan Belanja Desa (APBDes) Tahun 2026:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-white p-5 rounded-xl border transition-shadow hover:shadow-md" style={{ borderColor: '#e2ede8' }}>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: '#0a7c5c' }}>Pendapatan Desa</p>
+              <p className="text-2xl font-bold" style={{ color: '#0c1a30' }}>Rp 1.450.000.000</p>
+            </div>
+            <div className="bg-white p-5 rounded-xl border transition-shadow hover:shadow-md" style={{ borderColor: '#e2ede8' }}>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: '#1e3a5f' }}>Belanja Desa</p>
+              <p className="text-2xl font-bold" style={{ color: '#0c1a30' }}>Rp 1.425.000.000</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="komunitas" className="mt-12 pt-10 border-t border-emerald-900/10">
+          <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'var(--font-display)', color: '#0c1a30' }}>Program Komunitas</h2>
+          <ul className="list-disc pl-5 text-sm space-y-3" style={{ color: '#4a6475' }}>
+            <li><strong>Pemberdayaan UMKM:</strong> Pelatihan rutin bagi pelaku usaha mikro di ketiga dukuh untuk digitalisasi.</li>
+            <li><strong>Posyandu & Kesehatan:</strong> Pemeriksaan gratis untuk balita dan lansia setiap bulan di balai desa.</li>
+            <li><strong>Kerja Bakti Rutin:</strong> Pembersihan fasilitas umum dan saluran irigasi secara gotong royong setiap minggu pertama.</li>
+          </ul>
+        </div>
+
+        <div id="peraturan" className="mt-12 pt-10 border-t border-emerald-900/10">
+          <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'var(--font-display)', color: '#0c1a30' }}>Peraturan Desa</h2>
+          <p className="text-sm leading-relaxed" style={{ color: '#4a6475' }}>
+            Seluruh produk hukum, Peraturan Desa (Perdes), dan Surat Keputusan Kepala Desa dapat diakses secara publik oleh warga di Kantor Pelayanan Desa pada jam kerja operasional. Kami berkomitmen untuk selalu mensosialisasikan peraturan baru melalui forum musyawarah tingkat RT/RW.
+          </p>
+        </div>
+
         {/* Footer note */}
-        <p className="text-center text-xs mt-14" style={{ color: '#9ab8a8' }}>
+        <p className="text-center text-xs mt-16 pt-8 border-t" style={{ borderColor: '#d4e4d8', color: '#9ab8a8' }}>
           Data diperbarui: Agustus 2026 · Pemerintah Desa Banjarejo, Kec. Panekan, Kab. Magetan
         </p>
       </div>

@@ -208,6 +208,7 @@ export default function App() {
           <div className="flex items-center gap-4">
             <a
               href="#"
+              onClick={(e) => { e.preventDefault(); navigate('services', null); }}
               className="hidden lg:inline-flex items-center gap-2 px-5 py-2.5 rounded text-sm font-semibold text-white transition-all duration-200 hover:brightness-110"
               style={{ backgroundColor: '#065f46' }}
             >
@@ -240,6 +241,7 @@ export default function App() {
               <li className="pt-3 border-t border-white/10 mt-2">
                 <a
                   href="#"
+                  onClick={(e) => { e.preventDefault(); navigate('services', null); }}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded text-sm font-semibold text-white"
                   style={{ backgroundColor: '#065f46' }}
                 >
@@ -332,6 +334,7 @@ export default function App() {
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <a
               href="#"
+              onClick={(e) => { e.preventDefault(); navigate('services', null); }}
               className="inline-flex items-center gap-2 px-8 py-4 rounded font-semibold text-white text-base transition-all duration-200 hover:brightness-110 active:scale-95"
               style={{ backgroundColor: '#065f46' }}
             >
@@ -340,6 +343,7 @@ export default function App() {
             </a>
             <a
               href="#"
+              onClick={(e) => { e.preventDefault(); navigate('about', null); }}
               className="inline-flex items-center gap-2 px-8 py-4 rounded font-semibold text-sm border transition-all duration-200 hover:bg-white/10"
               style={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}
             >
@@ -423,6 +427,7 @@ export default function App() {
             </div>
             <a
               href="#"
+              onClick={(e) => { e.preventDefault(); navigate('news', null); }}
               className="inline-flex items-center gap-2 text-sm font-semibold transition-colors hover:gap-3 duration-200 flex-shrink-0"
               style={{ color: '#065f46' }}
             >
@@ -573,14 +578,21 @@ export default function App() {
             <div>
               <h4 className="text-white font-semibold text-sm tracking-wide mb-5">Tautan Cepat</h4>
               <ul className="space-y-3">
-                {['Profil Desa', 'Struktur Pemerintahan', 'APBDes Publik', 'Program Komunitas', 'Peraturan Desa'].map((item) => (
-                  <li key={item}>
+                {[
+                  { label: 'Profil Desa', id: 'profil-desa' },
+                  { label: 'Struktur Pemerintahan', id: null },
+                  { label: 'APBDes Publik', id: 'apbdes' },
+                  { label: 'Program Komunitas', id: 'komunitas' },
+                  { label: 'Peraturan Desa', id: 'peraturan' }
+                ].map((item) => (
+                  <li key={item.label}>
                     <a
                       href="#"
+                      onClick={(e) => { e.preventDefault(); navigate('about', item.id); }}
                       className="text-sm transition-colors duration-200 hover:text-white"
                       style={{ color: '#5a7a8a' }}
                     >
-                      {item}
+                      {item.label}
                     </a>
                   </li>
                 ))}
@@ -595,6 +607,7 @@ export default function App() {
                   <li key={item}>
                     <a
                       href="#"
+                      onClick={(e) => { e.preventDefault(); navigate('services', null); }}
                       className="text-sm transition-colors duration-200 hover:text-white"
                       style={{ color: '#5a7a8a' }}
                     >
@@ -647,9 +660,9 @@ export default function App() {
           >
             <p>© 2026 Pemerintah Desa Banjarejo. Hak cipta dilindungi.</p>
             <div className="flex items-center gap-5">
-              <a href="#" className="hover:text-white transition-colors">Kebijakan Privasi</a>
-              <a href="#" className="hover:text-white transition-colors">Ketentuan Penggunaan</a>
-              <a href="#" className="hover:text-white transition-colors">Peta Situs</a>
+              <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-white transition-colors">Kebijakan Privasi</a>
+              <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-white transition-colors">Ketentuan Penggunaan</a>
+              <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-white transition-colors">Peta Situs</a>
             </div>
           </div>
         </div>
