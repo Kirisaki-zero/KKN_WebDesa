@@ -4,8 +4,9 @@ import NewsPage from '@/pages/NewsPage'
 import HistoryPage from '@/pages/HistoryPage'
 import ServicesPage from '@/pages/ServicesPage'
 import UmkmPage from '@/pages/UmkmPage'
+import AdminPage from '@/pages/AdminPage'
 
-type Page = 'home' | 'about' | 'news' | 'history' | 'services' | 'umkm'
+type Page = 'home' | 'about' | 'news' | 'history' | 'services' | 'umkm' | 'admin'
 
 // ── Icons ────────────────────────────────────────────────────────────────────
 
@@ -252,6 +253,9 @@ export default function App() {
           </div>
         )}
       </nav>
+
+      {/* ── Admin Page ───────────────────────────────────────────────────────── */}
+      {currentPage === 'admin' && <AdminPage />}
 
       {/* ── Services Page ───────────────────────────────────────────────────── */}
       {currentPage === 'services' && <ServicesPage />}
@@ -662,7 +666,7 @@ export default function App() {
             <div className="flex items-center gap-5">
               <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-white transition-colors">Kebijakan Privasi</a>
               <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-white transition-colors">Ketentuan Penggunaan</a>
-              <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-white transition-colors">Peta Situs</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); navigate('admin', null); }} className="hover:text-emerald-400 font-semibold text-emerald-500 transition-colors">🔐 Admin Dasbor</a>
             </div>
           </div>
         </div>

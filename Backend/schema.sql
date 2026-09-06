@@ -1,9 +1,9 @@
 -- ==============================================================================
 -- SKEMA DATABASE DESA BANJAREJO
 -- ==============================================================================
--- Pastikan Anda membuat database terlebih dahulu di MySQL Anda:
--- CREATE DATABASE desa_banjarejo;
--- USE desa_banjarejo;
+-- Pastikan database dibuat dan dipilih otomatis:
+CREATE DATABASE IF NOT EXISTS `desa_banjarejo`;
+USE `desa_banjarejo`;
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
