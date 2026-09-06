@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -12,11 +12,12 @@ interface Article {
   date: string
   author: string
   image: string
+  isFeatured?: boolean
 }
 
-// ── Data ─────────────────────────────────────────────────────────────────────
+// ── Fallback Initial Data ──────────────────────────────────────────────────────
 
-const featured: Article = {
+const fallbackFeatured: Article = {
   id: 0,
   category: 'Pemerintahan',
   title: 'Musyawarah Desa Banjarejo Sepakati Rencana Pembangunan Jangka Menengah 2027–2032',
@@ -27,7 +28,7 @@ const featured: Article = {
   image: 'https://images.unsplash.com/photo-1752760023440-6e912553de03?w=1400&h=700&fit=crop&auto=format',
 }
 
-const articles: Article[] = [
+const fallbackArticles: Article[] = [
   {
     id: 1,
     category: 'Pemerintahan',
@@ -68,7 +69,7 @@ const articles: Article[] = [
     id: 5,
     category: 'Pertanian',
     title: 'Kelompok Tani Ngrombo Mulai Uji Coba Pertanian Organik di Lahan 1,2 Ha',
-    excerpt: 'Kelompok Tani Makmur Dukuh Ngrombo memulai uji coba pertanian organik pada lahan seluas 1,2 hektar dengan pendampingan dari Dinas Pertanian Kabupaten Magetan dan dukungan pupuk organik subsidi.',
+    excerpt: 'Kelompok Tani Makmur Dukuh Ngrombo memulai uji coba pertanian organik pada lahan seluas 1,2 hektar dengan pendampingan dari Dinas Pertanian Kabupaten Magetan.',
     date: '2 Agustus 2026',
     author: 'Agus Suryanto',
     image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&h=400&fit=crop&auto=format',
@@ -77,38 +78,11 @@ const articles: Article[] = [
     id: 6,
     category: 'Ekonomi',
     title: 'Program Simpan Pinjam Perempuan Banjarejo Perluas Jangkauan ke 60 Anggota',
-    excerpt: 'Kelompok SPP Desa Banjarejo menambah 18 anggota baru di Dukuh Genjeng, memperluas akses permodalan bagi perempuan pelaku usaha rumah tangga dengan plafon pinjaman hingga Rp 5 juta.',
+    excerpt: 'Kelompok SPP Desa Banjarejo menambah 18 anggota baru di Dukuh Genjeng, memperluas akses permodalan bagi perempuan pelaku usaha rumah tangga.',
     date: '30 Juli 2026',
     author: 'Dewi Lestari',
     image: 'https://images.unsplash.com/photo-1559526324-593bc073d938?w=600&h=400&fit=crop&auto=format',
-  },
-  {
-    id: 7,
-    category: 'Sosial',
-    title: 'Festival Agustusan Banjarejo Tampilkan Lomba Seni Budaya Tiga Dukuh',
-    excerpt: 'Memperingati HUT RI ke-81, Desa Banjarejo menggelar festival seni budaya selama dua hari yang melombakan penampilan dari tiga dukuh: Ngasem, Ngrombo, dan Genjeng, dihadiri ratusan warga.',
-    date: '17 Agustus 2026',
-    author: 'Hadi Susanto',
-    image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&h=400&fit=crop&auto=format',
-  },
-  {
-    id: 8,
-    category: 'Pemerintahan',
-    title: 'Pelantikan Pengurus RT dan RW Baru Desa Banjarejo Berjalan Khidmat',
-    excerpt: 'Kepala Desa Banjarejo melantik 14 pengurus RT dan 3 RW yang baru di tiga dukuh dalam upacara sederhana namun penuh semangat pengabdian kepada masyarakat desa.',
-    date: '25 Juli 2026',
-    author: 'Sudarmanto',
-    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&h=400&fit=crop&auto=format',
-  },
-  {
-    id: 9,
-    category: 'Pertanian',
-    title: 'Sumur Bor Komunal Dukuh Genjeng Selesai, 90 KK Nikmati Air Bersih',
-    excerpt: 'Proyek sumur bor komunal yang dibiayai dana desa dan swadaya warga rampung tepat waktu, memastikan 90 kepala keluarga di Dukuh Genjeng mendapatkan akses air bersih menjelang musim kemarau.',
-    date: '20 Juli 2026',
-    author: 'Ratna Sari',
-    image: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&h=400&fit=crop&auto=format',
-  },
+  }
 ]
 
 const categories: Category[] = ['Semua', 'Pemerintahan', 'Ekonomi', 'Pertanian', 'Sosial']
@@ -137,48 +111,40 @@ const CalendarIcon = () => (
 // ── News Card ─────────────────────────────────────────────────────────────────
 
 function NewsCard({ article }: { article: Article }) {
-  const accent = categoryAccent[article.category]
+  const accent = categoryAccent[article.category] || '#065f46'
   return (
     <article
       className="group flex flex-col bg-white rounded-2xl overflow-hidden border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer"
       style={{ borderColor: '#e8edf2', boxShadow: '0 2px 12px rgba(14,32,60,0.06)' }}
     >
-      {/* Image */}
       <div className="relative overflow-hidden flex-shrink-0" style={{ height: '192px', backgroundColor: '#0c1a30' }}>
         <img
-          src={article.image}
+          src={article.image || 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=400&fit=crop&auto=format'}
           alt={article.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          loading="lazy"
         />
-        <div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          style={{ background: 'linear-gradient(to top, rgba(6,95,70,0.3) 0%, transparent 60%)' }}
-          aria-hidden="true"
-        />
-      </div>
-
-      {/* Body */}
-      <div className="flex flex-col flex-1 p-5">
-        {/* Date + category row */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="absolute top-4 left-4">
           <span
-            className="text-xs font-bold tracking-wide px-2.5 py-0.5 rounded-full"
-            style={{ backgroundColor: `${accent}12`, color: accent }}
+            className="px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm"
+            style={{ backgroundColor: accent }}
           >
             {article.category}
           </span>
-          <div className="flex items-center gap-1.5 text-xs" style={{ color: '#9ab8a8' }}>
-            <CalendarIcon />
-            <span>{article.date}</span>
-          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col p-6">
+        <div className="flex items-center gap-1.5 text-xs mb-3" style={{ color: '#8a9fae' }}>
+          <CalendarIcon />
+          <span>{article.date}</span>
+          <span className="mx-1">•</span>
+          <span>{article.author}</span>
         </div>
 
-        {/* Title */}
         <h3
-          className="text-sm font-bold leading-snug mb-2"
+          className="text-base font-bold leading-snug mb-3 transition-colors group-hover:text-emerald-700"
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-sans)',
             color: '#0c1a30',
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -189,9 +155,8 @@ function NewsCard({ article }: { article: Article }) {
           {article.title}
         </h3>
 
-        {/* Excerpt — exactly 2 lines */}
         <p
-          className="text-xs leading-relaxed flex-1"
+          className="text-xs leading-relaxed flex-1 mb-4"
           style={{
             color: '#6b7f8a',
             display: '-webkit-box',
@@ -211,10 +176,38 @@ function NewsCard({ article }: { article: Article }) {
 
 export default function NewsPage() {
   const [activeCategory, setActiveCategory] = useState<Category>('Semua')
+  const [featuredArticle, setFeaturedArticle] = useState<Article>(fallbackFeatured)
+  const [articleList, setArticleList] = useState<Article[]>(fallbackArticles)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      setIsLoading(true)
+      try {
+        const url = activeCategory === 'Semua' 
+          ? 'http://localhost:5000/api/news' 
+          : `http://localhost:5000/api/news?category=${encodeURIComponent(activeCategory)}`
+        const res = await fetch(url)
+        const json = await res.json()
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const feat = json.data.find((a: Article) => a.isFeatured) || json.data[0]
+          const others = json.data.filter((a: Article) => a.id !== feat.id)
+          setFeaturedArticle(feat)
+          setArticleList(others.length > 0 ? others : json.data)
+        }
+      } catch (err) {
+        console.warn('Backend news API offline, using fallback client data:', err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchArticles()
+  }, [activeCategory])
 
   const filtered = activeCategory === 'Semua'
-    ? articles
-    : articles.filter((a) => a.category === activeCategory)
+    ? articleList
+    : articleList.filter((a) => a.category === activeCategory)
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f8faf9' }}>
@@ -249,148 +242,95 @@ export default function NewsPage() {
       <div className="max-w-7xl mx-auto px-6 lg:px-10 py-12 lg:py-16">
 
         {/* ── Featured Article ─────────────────────────────────────────────── */}
-        <div
-          className="group grid grid-cols-1 lg:grid-cols-5 rounded-2xl overflow-hidden mb-12 cursor-pointer border transition-all duration-300 hover:shadow-2xl"
-          style={{ borderColor: '#dde8e2', boxShadow: '0 4px 32px rgba(6,95,70,0.09)', backgroundColor: '#fff' }}
-        >
-          {/* Image — 3/5 */}
-          <div className="relative lg:col-span-3 overflow-hidden" style={{ minHeight: '320px', backgroundColor: '#0c1a30' }}>
-            <img
-              src={featured.image}
-              alt={featured.title}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              style={{ minHeight: '320px' }}
-            />
-            <div
-              className="absolute inset-0"
-              style={{ background: 'linear-gradient(to right, transparent 65%, rgba(255,255,255,0.06) 100%)' }}
-              aria-hidden="true"
-            />
-            {/* Featured label */}
-            <div className="absolute top-5 left-5">
-              <span
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white"
-                style={{ backgroundColor: '#065f46' }}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                Artikel Utama
-              </span>
-            </div>
-          </div>
-
-          {/* Content — 2/5 */}
-          <div className="lg:col-span-2 flex flex-col justify-center p-8 lg:p-10">
-            <div className="flex items-center gap-3 mb-5">
-              <span
-                className="px-3 py-1 rounded-full text-xs font-bold"
-                style={{ backgroundColor: '#f0f7f3', color: '#065f46' }}
-              >
-                {featured.category}
-              </span>
-              <div className="flex items-center gap-1.5 text-xs" style={{ color: '#9ab8a8' }}>
-                <CalendarIcon />
-                <span>{featured.date}</span>
-              </div>
-            </div>
-
-            <h2
-              className="text-2xl lg:text-3xl font-bold leading-tight mb-4"
-              style={{ fontFamily: 'var(--font-display)', color: '#0c1a30' }}
-            >
-              {featured.title}
-            </h2>
-
-            <p className="text-sm leading-relaxed mb-7" style={{ color: '#4a6475' }}>
-              {featured.excerpt}
-            </p>
-
-            <div className="flex items-center gap-3 mb-7">
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                style={{ background: 'linear-gradient(135deg, #065f46, #0a7c5c)' }}
-              >
-                {featured.author.split(' ').map(w => w[0]).join('').slice(0, 2)}
-              </div>
-              <p className="text-xs font-semibold" style={{ color: '#0c1a30' }}>{featured.author}</p>
-            </div>
-
-            <a
-              href="#"
-              className="inline-flex items-center gap-2 self-start px-6 py-3 rounded-lg text-sm font-bold text-white transition-all duration-200 hover:brightness-110 hover:gap-3 active:scale-95"
-              style={{ backgroundColor: '#065f46' }}
-            >
-              Baca Artikel
-              <ArrowRight />
-            </a>
-          </div>
-        </div>
-
-        {/* ── Category Tabs ────────────────────────────────────────────────── */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-            {categories.map((cat) => {
-              const isActive = activeCategory === cat
-              return (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className="flex-shrink-0 px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 cursor-pointer"
-                  style={
-                    isActive
-                      ? { backgroundColor: '#065f46', color: '#fff', boxShadow: '0 4px 12px rgba(6,95,70,0.28)' }
-                      : { backgroundColor: '#fff', color: '#4a6475', border: '1px solid #d4e4d8' }
-                  }
+        {featuredArticle && (
+          <div
+            className="group grid grid-cols-1 lg:grid-cols-5 rounded-2xl overflow-hidden mb-12 cursor-pointer border transition-all duration-300 hover:shadow-2xl"
+            style={{ borderColor: '#dde8e2', boxShadow: '0 4px 32px rgba(6,95,70,0.09)', backgroundColor: '#fff' }}
+          >
+            <div className="relative lg:col-span-3 overflow-hidden" style={{ minHeight: '320px', backgroundColor: '#0c1a30' }}>
+              <img
+                src={featuredArticle.image}
+                alt={featuredArticle.title}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                style={{ minHeight: '320px' }}
+              />
+              <div className="absolute top-5 left-5">
+                <span
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-md"
+                  style={{ backgroundColor: '#065f46' }}
                 >
-                  {cat}
-                </button>
-              )
-            })}
-          </div>
-          <p className="text-xs mt-3" style={{ color: '#9ab8a8' }}>
-            Menampilkan{' '}
-            <span className="font-semibold" style={{ color: '#065f46' }}>{filtered.length}</span>{' '}
-            artikel
-            {activeCategory !== 'Semua' && (
-              <> · kategori <span className="font-semibold" style={{ color: '#065f46' }}>{activeCategory}</span></>
-            )}
-          </p>
-        </div>
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                  Artikel Utama
+                </span>
+              </div>
+            </div>
 
-        {/* ── News Grid ────────────────────────────────────────────────────── */}
-        {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((article) => (
-              <NewsCard key={article.id} article={article} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-20">
-            <p className="text-4xl mb-4">📰</p>
-            <p className="font-semibold" style={{ color: '#0c1a30' }}>Belum ada artikel</p>
-            <p className="text-sm mt-1" style={{ color: '#9ab8a8' }}>Artikel dalam kategori ini belum tersedia.</p>
+            <div className="lg:col-span-2 flex flex-col justify-center p-8 lg:p-10">
+              <div className="flex items-center gap-3 mb-5">
+                <span
+                  className="px-3 py-1 rounded-full text-xs font-bold"
+                  style={{ backgroundColor: '#f0f7f3', color: '#065f46' }}
+                >
+                  {featuredArticle.category}
+                </span>
+                <div className="flex items-center gap-1.5 text-xs" style={{ color: '#9ab8a8' }}>
+                  <CalendarIcon />
+                  <span>{featuredArticle.date}</span>
+                </div>
+              </div>
+
+              <h2
+                className="text-2xl lg:text-3xl font-bold leading-tight mb-4"
+                style={{ fontFamily: 'var(--font-display)', color: '#0c1a30' }}
+              >
+                {featuredArticle.title}
+              </h2>
+
+              <p className="text-sm leading-relaxed mb-6" style={{ color: '#5a707e' }}>
+                {featuredArticle.excerpt}
+              </p>
+
+              <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 group-hover:translate-x-1 transition-transform">
+                Baca Artikel Selengkapnya <ArrowRight />
+              </div>
+            </div>
           </div>
         )}
 
-        {/* ── Load More ────────────────────────────────────────────────────── */}
-        {filtered.length >= 6 && (
-          <div className="flex justify-center mt-12">
-            <button
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-lg text-sm font-semibold border-2 cursor-pointer transition-all duration-200"
-              style={{ borderColor: '#065f46', color: '#065f46' }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget as HTMLElement
-                el.style.backgroundColor = '#065f46'
-                el.style.color = '#fff'
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget as HTMLElement
-                el.style.backgroundColor = 'transparent'
-                el.style.color = '#065f46'
-              }}
-            >
-              Muat Lebih Banyak
-              <ArrowRight />
-            </button>
+        {/* ── Category Filters ─────────────────────────────────────────────── */}
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+          <div className="flex flex-wrap items-center gap-2">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200"
+                style={
+                  activeCategory === cat
+                    ? { backgroundColor: '#065f46', color: '#fff', boxShadow: '0 4px 12px rgba(6,95,70,0.2)' }
+                    : { backgroundColor: '#fff', color: '#5a707e', border: '1px solid #e2ede8' }
+                }
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          <p className="text-xs" style={{ color: '#8a9fae' }}>
+            Menampilkan <strong style={{ color: '#0c1a30' }}>{filtered.length}</strong> artikel
+          </p>
+        </div>
+
+        {/* ── Articles Grid ────────────────────────────────────────────────── */}
+        {filtered.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
+            <p className="text-gray-500 text-sm">Belum ada artikel dalam kategori {activeCategory}.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map((art) => (
+              <NewsCard key={art.id} article={art} />
+            ))}
           </div>
         )}
       </div>

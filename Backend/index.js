@@ -7,6 +7,8 @@ import servicesRouter from './routes/services.js';
 import searchRouter from './routes/search.js';
 import contactRouter from './routes/contact.js';
 import bumdesRouter from './routes/bumdes.js';
+import newsRouter from './routes/news.js';
+import umkmRouter from './routes/umkm.js';
 
 dotenv.config();
 
@@ -36,6 +38,8 @@ app.use('/api/services', servicesRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/contact', contactRouter);
 app.use('/api/bumdes', bumdesRouter);
+app.use('/api/news', newsRouter);
+app.use('/api/umkm', umkmRouter);
 
 // Global 404 Handler
 app.use((req, res) => {

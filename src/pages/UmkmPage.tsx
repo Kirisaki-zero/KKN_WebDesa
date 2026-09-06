@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -263,7 +263,7 @@ function BusinessCard({ biz }: { biz: Business }) {
         {/* CTA row */}
         <div className="flex items-center gap-2 mt-auto">
           <a
-            href={`https://wa.me/${biz.whatsapp}`}
+            href={`http://localhost:5000/api/contact/${biz.id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold text-white transition-all duration-200 hover:brightness-110 active:scale-95"
@@ -317,7 +317,29 @@ function RegistrationModal({ onClose }: { onClose: () => void }) {
     return Object.keys(e).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); if (validate()) setSubmitted(true) }
+  const handleSubmit = async (e: React.FormEvent) => { 
+    e.preventDefault(); 
+    if (validate()) {
+      try {
+        await fetch('http://localhost:5000/api/bumdes/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            namaLengkap: form.nama,
+            nik: form.nik,
+            noWa: form.hp,
+            dukuh: form.dukuh,
+            jenisLayanan: form.jenis,
+            jumlahPinjaman: form.jumlah,
+            tujuanPenggunaan: form.tujuan
+          })
+        });
+      } catch (err) {
+        console.warn('BUMDes API offline, fallback:', err);
+      }
+      setSubmitted(true);
+    }
+  }
 
   const fieldStyle = (k: keyof RegForm): React.CSSProperties => ({
     width: '100%', padding: '0.75rem 1rem', borderRadius: '0.75rem',
@@ -653,6 +675,22 @@ function KopdesContent() {
 
 export default function UmkmPage() {
   const [activeTab, setActiveTab] = useState<Tab>('umkm')
+  const [bizList, setBizList] = useState<Business[]>(businesses)
+
+  useEffect(() => {
+    const fetchUmkm = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/umkm')
+        const json = await res.json()
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setBizList(json.data)
+        }
+      } catch (err) {
+        console.warn('UMKM API offline, using fallback:', err)
+      }
+    }
+    fetchUmkm()
+  }, [])
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'umkm', label: 'UMKM Warga' },
@@ -747,7 +785,7 @@ export default function UmkmPage() {
           <div>
             <div className="flex items-center justify-between mb-8">
               <p className="text-sm" style={{ color: '#9ab8a8' }}>
-                Menampilkan <span className="font-semibold" style={{ color: '#065f46' }}>{businesses.length}</span> usaha
+                Menampilkan <span className="font-semibold" style={{ color: '#065f46' }}>{bizList.length}</span> usaha
               </p>
               <span
                 className="text-xs px-3 py-1.5 rounded-full font-semibold"
@@ -757,7 +795,7 @@ export default function UmkmPage() {
               </span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-              {businesses.map((biz) => (
+              {bizList.map((biz) => (
                 <BusinessCard key={biz.id} biz={biz} />
               ))}
             </div>
