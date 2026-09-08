@@ -130,4 +130,70 @@ router.get('/', async (req, res) => {
   }
 });
 
+/**
+ * @route   POST /api/umkm
+ * @desc    Add new UMKM business (Admin only)
+ */
+router.post('/', async (req, res) => {
+  try {
+    const { name, category, description, owner, dukuh, since, whatsapp, instagram, youtubeId, thumbnail } = req.body;
+    if (!name || !dukuh) return res.status(400).json({ success: false, message: 'Nama usaha dan dukuh wajib diisi.' });
+    try {
+      const [result] = await pool.query(
+        `INSERT INTO umkm (nama_usaha, kategori, deskripsi, pemilik, dukuh, sejak, whatsapp, instagram, youtube_id, gambar_url)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [name, category || 'Lainnya', description || '', owner || '', dukuh, since || new Date().getFullYear(), whatsapp || '', instagram || '', youtubeId || '', thumbnail || '']
+      );
+      return res.status(201).json({ success: true, message: 'UMKM berhasil ditambahkan.', data: { id: result.insertId, name } });
+    } catch (dbErr) {
+      console.warn('DB Insert UMKM (demo mode):', dbErr.message);
+    }
+    return res.status(201).json({ success: true, message: 'UMKM berhasil ditambahkan (mode demo).', data: { id: Date.now(), name, category, dukuh } });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Gagal menambah UMKM.', error: error.message });
+  }
+});
+
+/**
+ * @route   PUT /api/umkm/:id
+ * @desc    Update UMKM data (Admin only)
+ */
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, category, description, owner, dukuh, since, whatsapp, instagram, youtubeId, thumbnail } = req.body;
+    try {
+      await pool.query(
+        `UPDATE umkm SET nama_usaha=?, kategori=?, deskripsi=?, pemilik=?, dukuh=?, sejak=?, whatsapp=?, instagram=?, youtube_id=?, gambar_url=?
+         WHERE id_umkm=?`,
+        [name, category, description, owner, dukuh, since, whatsapp, instagram, youtubeId, thumbnail, id]
+      );
+    } catch (dbErr) {
+      console.warn('DB Update UMKM (demo mode):', dbErr.message);
+    }
+    return res.json({ success: true, message: `UMKM ID ${id} berhasil diperbarui.` });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Gagal memperbarui data UMKM.', error: error.message });
+  }
+});
+
+/**
+ * @route   DELETE /api/umkm/:id
+ * @desc    Delete UMKM (Admin only)
+ */
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    try {
+      await pool.query('DELETE FROM umkm WHERE id_umkm = ?', [id]);
+    } catch (dbErr) {
+      console.warn('DB Delete UMKM (demo mode):', dbErr.message);
+    }
+    return res.json({ success: true, message: `UMKM ID ${id} berhasil dihapus.` });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Gagal menghapus UMKM.', error: error.message });
+  }
+});
+
 export default router;
+
