@@ -80,12 +80,10 @@ router.get('/', async (req, res) => {
 
       const [rows] = await pool.query(sql, params);
 
-      if (rows.length > 0) {
-        return res.json({
-          success: true,
-          data: rows
-        });
-      }
+      return res.json({
+        success: true,
+        data: rows
+      });
     } catch (dbErr) {
       console.warn('DB Query News fallback:', dbErr.message);
     }

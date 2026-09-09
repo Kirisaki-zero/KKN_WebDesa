@@ -19,11 +19,12 @@ const FALLBACK_WARGA = [
  */
 router.get('/', async (req, res) => {
   try {
-    const { q, dukuh, page = 1, limit = 20 } = req.query;
+    const { q, dukuh, page = 1, limit = 50 } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
 
     try {
-      let sql = `SELECT nik, nama_lengkap, dukuh, jenis_kelamin, agama, pekerjaan, status_kawin
+      let sql = `SELECT nik, nama_lengkap, dukuh, jenis_kelamin, alamat_detail,
+                        DATE_FORMAT(created_at, '%d %b %Y') as tanggal_daftar
                  FROM warga`;
       const params = [];
       const conditions = [];
@@ -37,7 +38,7 @@ router.get('/', async (req, res) => {
         params.push(dukuh);
       }
       if (conditions.length) sql += ` WHERE ` + conditions.join(' AND ');
-      sql += ` ORDER BY nama_lengkap ASC LIMIT ? OFFSET ?`;
+      sql += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
       params.push(Number(limit), offset);
 
       const [rows] = await pool.query(sql, params);
@@ -46,9 +47,7 @@ router.get('/', async (req, res) => {
         params.slice(0, -2)
       );
 
-      if (rows.length > 0 || total > 0) {
-        return res.json({ success: true, data: rows, total, page: Number(page), limit: Number(limit) });
-      }
+      return res.json({ success: true, data: rows, total, page: Number(page), limit: Number(limit) });
     } catch (dbErr) {
       console.warn('DB Query Warga fallback:', dbErr.message);
     }
@@ -57,7 +56,7 @@ router.get('/', async (req, res) => {
     let filtered = FALLBACK_WARGA;
     if (q) filtered = filtered.filter(w => w.nama_lengkap.toLowerCase().includes(q.toLowerCase()) || w.nik.includes(q));
     if (dukuh && dukuh !== 'Semua') filtered = filtered.filter(w => w.dukuh === dukuh);
-    return res.json({ success: true, data: filtered, total: filtered.length, page: 1, limit: 20 });
+    return res.json({ success: true, data: filtered, total: filtered.length, page: 1, limit: 50 });
 
   } catch (error) {
     console.error('Error fetching warga:', error);
@@ -73,7 +72,7 @@ router.get('/:nik', async (req, res) => {
   try {
     const { nik } = req.params;
     try {
-      const [rows] = await pool.query('SELECT * FROM warga WHERE nik = ?', [nik]);
+      const [rows] = await pool.query('SELECT nik, nama_lengkap, dukuh, jenis_kelamin, alamat_detail FROM warga WHERE nik = ?', [nik]);
       if (rows.length > 0) return res.json({ success: true, data: rows[0] });
     } catch (dbErr) {
       console.warn('DB Warga detail fallback:', dbErr.message);
@@ -92,7 +91,7 @@ router.get('/:nik', async (req, res) => {
  */
 router.post('/', async (req, res) => {
   try {
-    const { nik, nama_lengkap, dukuh, jenis_kelamin, agama, pekerjaan, alamat_detail, status_kawin } = req.body;
+    const { nik, nama_lengkap, dukuh, jenis_kelamin, alamat_detail } = req.body;
     if (!nik || !nama_lengkap || !dukuh || !jenis_kelamin) {
       return res.status(400).json({ success: false, message: 'NIK, Nama Lengkap, Dukuh, dan Jenis Kelamin wajib diisi.' });
     }
@@ -101,14 +100,15 @@ router.post('/', async (req, res) => {
     }
     try {
       await pool.query(
-        `INSERT INTO warga (nik, nama_lengkap, dukuh, jenis_kelamin, agama, pekerjaan, alamat_detail, status_kawin)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [nik, nama_lengkap, dukuh, jenis_kelamin, agama || 'Islam', pekerjaan || '-', alamat_detail || '', status_kawin || 'Belum Kawin']
+        `INSERT INTO warga (nik, nama_lengkap, dukuh, jenis_kelamin, alamat_detail)
+         VALUES (?, ?, ?, ?, ?)`,
+        [nik, nama_lengkap, dukuh, jenis_kelamin, alamat_detail || '']
       );
+      return res.status(201).json({ success: true, message: `Data warga ${nama_lengkap} berhasil ditambahkan.`, data: { nik, nama_lengkap, dukuh, jenis_kelamin, alamat_detail } });
     } catch (dbErr) {
       console.warn('DB Insert Warga (demo mode):', dbErr.message);
+      return res.status(500).json({ success: false, message: dbErr.message });
     }
-    return res.status(201).json({ success: true, message: `Data warga ${nama_lengkap} berhasil ditambahkan.`, data: { nik, nama_lengkap, dukuh, jenis_kelamin } });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Gagal menambah data warga.', error: error.message });
   }
@@ -121,17 +121,18 @@ router.post('/', async (req, res) => {
 router.put('/:nik', async (req, res) => {
   try {
     const { nik } = req.params;
-    const { nama_lengkap, dukuh, jenis_kelamin, agama, pekerjaan, alamat_detail, status_kawin } = req.body;
+    const { nama_lengkap, dukuh, jenis_kelamin, alamat_detail } = req.body;
     try {
       await pool.query(
-        `UPDATE warga SET nama_lengkap = ?, dukuh = ?, jenis_kelamin = ?, agama = ?, pekerjaan = ?, alamat_detail = ?, status_kawin = ?
+        `UPDATE warga SET nama_lengkap = ?, dukuh = ?, jenis_kelamin = ?, alamat_detail = ?
          WHERE nik = ?`,
-        [nama_lengkap, dukuh, jenis_kelamin, agama, pekerjaan, alamat_detail, status_kawin, nik]
+        [nama_lengkap, dukuh, jenis_kelamin, alamat_detail, nik]
       );
+      return res.json({ success: true, message: `Data warga NIK ${nik} berhasil diperbarui.` });
     } catch (dbErr) {
-      console.warn('DB Update Warga (demo mode):', dbErr.message);
+      console.warn('DB Update Warga:', dbErr.message);
+      return res.status(500).json({ success: false, message: dbErr.message });
     }
-    return res.json({ success: true, message: `Data warga NIK ${nik} berhasil diperbarui.` });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Gagal memperbarui data warga.', error: error.message });
   }
@@ -146,10 +147,11 @@ router.delete('/:nik', async (req, res) => {
     const { nik } = req.params;
     try {
       await pool.query('DELETE FROM warga WHERE nik = ?', [nik]);
+      return res.json({ success: true, message: `Data warga NIK ${nik} berhasil dihapus.` });
     } catch (dbErr) {
-      console.warn('DB Delete Warga (demo mode):', dbErr.message);
+      console.warn('DB Delete Warga:', dbErr.message);
+      return res.status(500).json({ success: false, message: dbErr.message });
     }
-    return res.json({ success: true, message: `Data warga NIK ${nik} berhasil dihapus.` });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Gagal menghapus data warga.', error: error.message });
   }

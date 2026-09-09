@@ -106,12 +106,10 @@ router.get('/', async (req, res) => {
          ORDER BY id_umkm ASC`
       );
 
-      if (rows.length > 0) {
-        return res.json({
-          success: true,
-          data: rows
-        });
-      }
+      return res.json({
+        success: true,
+        data: rows
+      });
     } catch (dbErr) {
       console.warn('DB Query UMKM fallback:', dbErr.message);
     }

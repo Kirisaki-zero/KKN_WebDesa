@@ -171,23 +171,23 @@ router.get('/admin/stats', async (req, res) => {
  * @desc    Get all letter requests (for village admin dashboard)
  */
 router.get('/admin/list', async (req, res) => {
-
   try {
     try {
       const [rows] = await pool.query(
         `SELECT s.id_surat, s.nomor_pelacakan, s.jenis_layanan, s.status, 
-                s.tanggal_pengajuan, s.keterangan, w.nama_lengkap, w.nik, w.dukuh
+                s.tanggal_pengajuan, s.keterangan, 
+                COALESCE(w.nama_lengkap, 'Warga Baru') as nama_lengkap, 
+                s.nik_pemohon as nik, 
+                COALESCE(w.dukuh, 'Genjeng') as dukuh
          FROM layanan_surat s
-         JOIN warga w ON s.nik_pemohon = w.nik
+         LEFT JOIN warga w ON s.nik_pemohon = w.nik
          ORDER BY s.tanggal_pengajuan DESC`
       );
 
-      if (rows.length > 0) {
-        return res.json({
-          success: true,
-          data: rows
-        });
-      }
+      return res.json({
+        success: true,
+        data: rows
+      });
     } catch (dbErr) {
       console.warn('DB Admin list fallback:', dbErr.message);
     }
@@ -206,28 +206,6 @@ router.get('/admin/list', async (req, res) => {
           nama_lengkap: 'Budi Santoso',
           nik: '3520011204900001',
           dukuh: 'Ngasem'
-        },
-        {
-          id_surat: 2,
-          nomor_pelacakan: 'RESI-20260905-9B2Y',
-          jenis_layanan: 'Akta_Kelahiran',
-          status: 'PROSES',
-          tanggal_pengajuan: new Date(Date.now() - 86400000).toISOString(),
-          keterangan: 'Pengurusan Akta Kelahiran Anak',
-          nama_lengkap: 'Siti Aminah',
-          nik: '3520014508950002',
-          dukuh: 'Ngrombo'
-        },
-        {
-          id_surat: 3,
-          nomor_pelacakan: 'RESI-20260904-7C3Z',
-          jenis_layanan: 'Izin_Usaha',
-          status: 'SELESAI',
-          tanggal_pengajuan: new Date(Date.now() - 172800000).toISOString(),
-          keterangan: 'Izin Usaha Mikro Kerupuk Puli',
-          nama_lengkap: 'Slamet Riyadi',
-          nik: '3520011010880003',
-          dukuh: 'Genjeng'
         }
       ]
     });
@@ -238,6 +216,88 @@ router.get('/admin/list', async (req, res) => {
       message: 'Gagal mengambil daftar permohonan admin.',
       error: error.message
     });
+  }
+});
+
+/**
+ * @route   GET /api/services/admin/dashboard-stats
+ * @desc    Get dashboard aggregated stats from MySQL
+ */
+router.get('/admin/dashboard-stats', async (req, res) => {
+  try {
+    let totalWarga = 0;
+    let totalSurat = 0;
+    let totalNews = 0;
+    let totalUmkm = 0;
+    let dukuhCounts = [
+      { nama: "Ngasem",  jiwa: 0, barColor: "var(--clr-chart-1)", badgeBg: "rgba(6,95,70,0.10)", badgeColor: "#065f46" },
+      { nama: "Ngrombo", jiwa: 0, barColor: "var(--clr-chart-3)", badgeBg: "rgba(5,150,105,0.10)", badgeColor: "#059669" },
+      { nama: "Genjeng", jiwa: 0, barColor: "var(--clr-chart-2)", badgeBg: "rgba(157,193,131,0.20)", badgeColor: "#4a7a3a" }
+    ];
+    let recentPermohonan = [];
+
+    try {
+      const [[{ cnt: countWarga }]] = await pool.query(`SELECT COUNT(*) as cnt FROM warga`);
+      const [[{ cnt: countSurat }]] = await pool.query(`SELECT COUNT(*) as cnt FROM layanan_surat`);
+      const [[{ cnt: countNews }]]  = await pool.query(`SELECT COUNT(*) as cnt FROM artikel`);
+      const [[{ cnt: countUmkm }]]  = await pool.query(`SELECT COUNT(*) as cnt FROM umkm`);
+
+      totalWarga = countWarga;
+      totalSurat = countSurat;
+      totalNews  = countNews;
+      totalUmkm  = countUmkm;
+
+      const [dukuhRows] = await pool.query(`SELECT dukuh, COUNT(*) as jiwa FROM warga GROUP BY dukuh`);
+      dukuhCounts = dukuhCounts.map(d => {
+        const found = dukuhRows.find(r => r.dukuh === d.nama);
+        return found ? { ...d, jiwa: found.jiwa } : d;
+      });
+
+      const [recentRows] = await pool.query(
+        `SELECT s.nomor_pelacakan as resi, 
+                COALESCE(w.nama_lengkap, 'Warga Baru') as nama, 
+                COALESCE(w.dukuh, 'Genjeng') as dukuh, 
+                REPLACE(s.jenis_layanan, '_', ' ') as layanan, 
+                s.status
+         FROM layanan_surat s
+         LEFT JOIN warga w ON s.nik_pemohon = w.nik
+         ORDER BY s.tanggal_pengajuan DESC
+         LIMIT 6`
+      );
+      recentPermohonan = recentRows;
+
+      return res.json({
+        success: true,
+        data: {
+          totalWarga,
+          totalSurat,
+          totalNews,
+          totalUmkm,
+          dukuhCounts,
+          recentPermohonan
+        }
+      });
+    } catch (dbErr) {
+      console.warn('DB Dashboard Stats fallback:', dbErr.message);
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        totalWarga: 2847,
+        totalSurat: 38,
+        totalNews: 12,
+        totalUmkm: 24,
+        dukuhCounts: [
+          { nama: "Ngasem",  jiwa: 1120, barColor: "var(--clr-chart-1)", badgeBg: "rgba(6,95,70,0.10)", badgeColor: "#065f46" },
+          { nama: "Ngrombo", jiwa: 940,  barColor: "var(--clr-chart-3)", badgeBg: "rgba(5,150,105,0.10)", badgeColor: "#059669" },
+          { nama: "Genjeng", jiwa: 787,  barColor: "var(--clr-chart-2)", badgeBg: "rgba(157,193,131,0.20)", badgeColor: "#4a7a3a" }
+        ],
+        recentPermohonan: []
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Gagal memuat statistik dasbor.', error: error.message });
   }
 });
 
