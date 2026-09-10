@@ -529,7 +529,7 @@ export default function App() {
                 </div>
               </div>
               <a
-                href="https://maps.google.com/maps?q=Kantor+Desa+Banjarejo+Panekan+Magetan"
+                href="https://www.google.com/maps?q=-7.5911745,111.3180323"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded text-xs font-semibold text-white border border-white/20 hover:bg-white/10 transition-colors"
@@ -538,11 +538,11 @@ export default function App() {
               </a>
             </div>
 
-            {/* Google Maps Embed iframe */}
+            {/* Google Maps Embed iframe with Marker Pin at -7.5911745,111.3180323 */}
             <div className="relative w-full overflow-hidden" style={{ height: '450px' }}>
               <iframe
-                title="Lokasi Desa Banjarejo Magetan"
-                src="https://maps.google.com/maps?q=Kantor%20Desa%20Banjarejo%2C%20Panekan%2C%20Magetan%2C%20Jawa%20Timur&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                title="Lokasi Kantor Desa Banjarejo Magetan"
+                src="https://maps.google.com/maps?q=-7.5911745,111.3180323+(Kantor%20Desa%20Banjarejo)&t=&z=16&ie=UTF8&iwloc=B&output=embed"
                 className="w-full h-full border-0"
                 loading="lazy"
                 allowFullScreen
