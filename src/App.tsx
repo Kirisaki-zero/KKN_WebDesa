@@ -529,22 +529,23 @@ export default function App() {
                 </div>
               </div>
               <a
-                href="https://www.openstreetmap.org/?mlat=-7.591&mlon=111.352#map=15/-7.591/111.352"
+                href="https://maps.google.com/maps?q=Kantor+Desa+Banjarejo+Panekan+Magetan"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded text-xs font-semibold text-white border border-white/20 hover:bg-white/10 transition-colors"
               >
-                Buka Peta <ChevronRight />
+                Buka Peta Google <ChevronRight />
               </a>
             </div>
 
-            {/* OSM iframe */}
-            <div className="relative w-full" style={{ height: '420px' }}>
+            {/* Google Maps Embed iframe */}
+            <div className="relative w-full overflow-hidden" style={{ height: '450px' }}>
               <iframe
-                title="Lokasi Desa Banjarejo"
-                src="https://www.openstreetmap.org/export/embed.html?bbox=111.33%2C-7.61%2C111.38%2C-7.57&layer=mapnik&marker=-7.591%2C111.352"
+                title="Lokasi Desa Banjarejo Magetan"
+                src="https://maps.google.com/maps?q=Kantor%20Desa%20Banjarejo%2C%20Panekan%2C%20Magetan%2C%20Jawa%20Timur&t=&z=16&ie=UTF8&iwloc=&output=embed"
                 className="w-full h-full border-0"
                 loading="lazy"
+                allowFullScreen
               />
             </div>
           </div>
