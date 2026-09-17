@@ -183,3 +183,51 @@ END//
 DELIMITER ;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- ------------------------------------------------------------------------------
+-- 6. TABEL PERANGKAT DESA
+-- ------------------------------------------------------------------------------
+DROP TABLE IF EXISTS `perangkat_desa`;
+CREATE TABLE `perangkat_desa` (
+  `id`         INT NOT NULL AUTO_INCREMENT,
+  `nama`       VARCHAR(100) NOT NULL,
+  `jabatan`    VARCHAR(100) NOT NULL,
+  `foto_url`   VARCHAR(500) DEFAULT NULL,
+  `urutan`     INT DEFAULT 0,
+  `aktif`      TINYINT(1) DEFAULT 1,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Seed Data Perangkat Desa Default
+INSERT INTO `perangkat_desa` (`nama`, `jabatan`, `urutan`) VALUES
+('JANTI', 'KEPALA DESA', 1),
+('EVY NURDIANI', 'SEKRETARIS DESA', 2),
+('SUTRISNO', 'KASI PELAYANAN', 3),
+('SUPRIYANTO', 'KASI PEMERINTAHAN', 4),
+('SUPONO', 'KASI KESEJAHTERAAN', 5),
+('KUSNO', 'KAUR KEUANGAN', 6),
+('SUNARTO', 'KAUR TATA USAHA & UMUM', 7),
+('NANI APRILIANTO', 'KAUR PERENCANAAN', 8),
+('DIDIK SETYAWAN', 'KAMITUWO', 9),
+('GUNAWAN, AN', 'KAMITUWO', 10),
+('DAWAM ANSORI', 'KAMITUWO', 11);
+
+-- ------------------------------------------------------------------------------
+-- 7. TABEL ADMIN USERS
+-- ------------------------------------------------------------------------------
+DROP TABLE IF EXISTS `admin_users`;
+CREATE TABLE `admin_users` (
+  `id`            INT NOT NULL AUTO_INCREMENT,
+  `username`      VARCHAR(50) NOT NULL UNIQUE,
+  `password_hash` VARCHAR(255) NOT NULL,
+  `nama_lengkap`  VARCHAR(100),
+  `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Seed Admin User Default (password default: admin123 -> $2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vj2v8q4C4S)
+INSERT INTO `admin_users` (`username`, `password_hash`, `nama_lengkap`) VALUES
+('admin', '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vj2v8q4C4S', 'Administrator Desa');
+

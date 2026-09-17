@@ -1,122 +1,151 @@
+import { useState, useEffect } from 'react'
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface OrgMember {
+  id?: number
   name: string
   position: string
-  detail: string
+  detail?: string
   initials: string
-  avatarFrom: string
-  avatarTo: string
+  image?: string
 }
 
-// ── Data ─────────────────────────────────────────────────────────────────────
-
-const headVillage: OrgMember = {
-  name: 'Sudarmanto, S.Sos.',
-  position: 'Kepala Desa',
-  detail: 'Menjabat sejak 2021',
-  initials: 'SD',
-  avatarFrom: '#065f46',
-  avatarTo: '#047857',
+interface ApiPerangkat {
+  id: number
+  nama: string
+  jabatan: string
+  foto_url: string | null
+  urutan: number
 }
 
-const secondTier: OrgMember[] = [
-  {
-    name: 'Sri Wahyuni, A.Md.',
-    position: 'Sekretaris Desa',
-    detail: 'Menjabat sejak 2019',
-    initials: 'SW',
-    avatarFrom: '#1e3a5f',
-    avatarTo: '#2a5080',
-  },
-  {
-    name: 'Hadi Susanto, S.H.',
-    position: 'Ketua BPD',
-    detail: 'Periode 2020–2026',
-    initials: 'HS',
-    avatarFrom: '#1a3258',
-    avatarTo: '#1e3a5f',
-  },
+// ── Default Fallback Data ──────────────────────────────────────────────────
+
+const defaultKepalaDesa: OrgMember = {
+  name: 'JANTI',
+  position: 'KEPALA DESA',
+  initials: 'J',
+  detail: 'Kepala Desa Janti',
+}
+
+const defaultKasiPelayanan: OrgMember = {
+  name: 'SUTRISNO',
+  position: 'KASI PELAYANAN',
+  initials: 'ST',
+}
+
+const defaultKasiPemerintahan: OrgMember = {
+  name: 'SUPRIYANTO',
+  position: 'KASI PEMERINTAHAN',
+  initials: 'SP',
+}
+
+const defaultStafPemerintahan: OrgMember = {
+  name: 'MUJI',
+  position: 'STAF',
+  initials: 'MJ',
+}
+
+const defaultKasiKesejahteraan: OrgMember = {
+  name: 'SUPONO',
+  position: 'KASI KESEJAHTERAAN',
+  initials: 'SP',
+}
+
+const defaultSekretarisDesa: OrgMember = {
+  name: 'EVY NURDIANI',
+  position: 'SEKRETARIS DESA',
+  initials: 'EN',
+}
+
+const defaultKaurKeuangan: OrgMember = {
+  name: 'KUSNO',
+  position: 'KAUR KEUANGAN',
+  initials: 'KS',
+}
+
+const defaultKaurTU: OrgMember = {
+  name: 'SUNARTO',
+  position: 'KAUR TATA USAHA & UMUM',
+  initials: 'SN',
+}
+
+const defaultKaurPerencanaan: OrgMember = {
+  name: 'NANI APRILIANTO',
+  position: 'KAUR PERENCANAAN',
+  initials: 'NA',
+}
+
+const defaultKamituwoList: OrgMember[] = [
+  { name: 'DIDIK SETYAWAN', position: 'KAMITUWO', initials: 'DS' },
+  { name: 'GUNAWAN, AN', position: 'KAMITUWO', initials: 'GA' },
+  { name: 'DAWAM ANSORI', position: 'KAMITUWO', initials: 'DA' },
 ]
 
-const kamituwo: OrgMember[] = [
-  {
-    name: 'Agus Suryanto',
-    position: 'Kamituwo Ngasem',
-    detail: 'Dukuh Ngasem',
-    initials: 'AS',
-    avatarFrom: '#065f46',
-    avatarTo: '#0a7c5c',
-  },
-  {
-    name: 'Joko Purnomo',
-    position: 'Kamituwo Ngrombo',
-    detail: 'Dukuh Ngrombo',
-    initials: 'JP',
-    avatarFrom: '#1e3a5f',
-    avatarTo: '#2a5080',
-  },
-  {
-    name: 'Ratna Sari, S.Pd.',
-    position: 'Kamituwo Genjeng',
-    detail: 'Dukuh Genjeng',
-    initials: 'RS',
-    avatarFrom: '#065f46',
-    avatarTo: '#0a7c5c',
-  },
-]
+// Helper untuk generate inisial otomatis dari nama
+function getInitials(name: string): string {
+  if (!name) return 'PD'
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase()
+  return (parts[0][0] + parts[1][0]).toUpperCase()
+}
 
-// ── Card ─────────────────────────────────────────────────────────────────────
+// ── Header Card Component matching government chart style ────────────────
 
 interface CardProps {
   member: OrgMember
   size?: 'lg' | 'md' | 'sm'
+  accentColor?: string
 }
 
-function ProfileCard({ member, size = 'md' }: CardProps) {
-  const avatarSize  = size === 'lg' ? 'w-28 h-28 text-3xl' : size === 'md' ? 'w-20 h-20 text-xl' : 'w-16 h-16 text-base'
-  const nameFontSize = size === 'lg' ? 'text-xl' : size === 'md' ? 'text-base' : 'text-sm'
-  const padding     = size === 'lg' ? 'px-10 py-9' : size === 'md' ? 'px-7 py-6' : 'px-5 py-5'
+function OrgCard({ member, size = 'md', accentColor = 'bg-emerald-700' }: CardProps) {
+  const avatarSize = size === 'lg' ? 'w-16 h-16 text-xl' : size === 'md' ? 'w-12 h-12 text-sm' : 'w-10 h-10 text-xs'
+  const nameFontSize = size === 'lg' ? 'text-lg' : size === 'md' ? 'text-sm' : 'text-xs'
 
   return (
     <div
-      className={`flex flex-col items-center text-center bg-white rounded-2xl border transition-all duration-300 hover:-translate-y-1 ${padding}`}
+      className="flex flex-col bg-white rounded-xl overflow-hidden border border-slate-200 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 w-full text-center"
       style={{
-        borderColor: '#e2ede8',
-        boxShadow: '0 4px 24px rgba(6,95,70,0.08), 0 1px 4px rgba(6,95,70,0.04)',
+        boxShadow: '0 4px 18px rgba(0,0,0,0.05)',
       }}
     >
-      {/* Avatar */}
-      <div
-        className={`${avatarSize} rounded-full flex items-center justify-center font-bold text-white mb-4 flex-shrink-0 ring-4 ring-white`}
-        style={{
-          background: `linear-gradient(135deg, ${member.avatarFrom}, ${member.avatarTo})`,
-          boxShadow: `0 6px 20px ${member.avatarFrom}40`,
-        }}
-      >
-        {member.initials}
+      {/* Top Green Badge (matches theme header) */}
+      <div className={`${accentColor} text-white font-bold py-1.5 px-3 text-xs tracking-wider uppercase flex items-center justify-center min-h-[30px]`}>
+        {member.position}
       </div>
 
-      {/* Position badge */}
-      <span
-        className="inline-block px-3 py-0.5 rounded-full text-xs font-semibold tracking-wide mb-2"
-        style={{ backgroundColor: '#f0f7f3', color: '#065f46' }}
-      >
-        {member.position}
-      </span>
+      {/* Card Content */}
+      <div className="p-3 lg:p-4 flex flex-col items-center justify-center flex-1 bg-gradient-to-b from-white to-slate-50">
+        {/* Officer Avatar standard */}
+        <div
+          className={`${avatarSize} rounded-full flex items-center justify-center font-bold text-slate-700 bg-emerald-50 border-2 border-emerald-500/30 mb-2 flex-shrink-0 relative overflow-hidden`}
+        >
+          {member.image ? (
+            <img
+              src={member.image}
+              alt={member.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.currentTarget as HTMLElement).style.display = 'none'
+              }}
+            />
+          ) : (
+            <span className="text-emerald-800">{member.initials}</span>
+          )}
+        </div>
 
-      {/* Name */}
-      <h3
-        className={`${nameFontSize} font-bold leading-snug mb-1`}
-        style={{ fontFamily: 'var(--font-display)', color: '#0c1a30' }}
-      >
-        {member.name}
-      </h3>
+        {/* Name */}
+        <h3
+          className={`${nameFontSize} font-bold text-slate-800 tracking-wide uppercase leading-tight`}
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          {member.name}
+        </h3>
 
-      {/* Detail */}
-      <p className="text-xs" style={{ color: '#6b8f7b' }}>
-        {member.detail}
-      </p>
+        {member.detail && (
+          <p className="text-[11px] text-slate-500 mt-0.5">{member.detail}</p>
+        )}
+      </div>
     </div>
   )
 }
@@ -125,15 +154,12 @@ function ProfileCard({ member, size = 'md' }: CardProps) {
 
 function TierLabel({ label }: { label: string }) {
   return (
-    <div className="flex items-center gap-4 my-10">
-      <div className="flex-1 h-px" style={{ backgroundColor: '#d4e4d8' }} />
-      <span
-        className="text-xs font-semibold tracking-widest uppercase px-4"
-        style={{ color: '#9ab8a8' }}
-      >
+    <div className="flex items-center gap-4 my-8">
+      <div className="flex-1 h-px bg-slate-200" />
+      <span className="text-xs font-bold tracking-widest uppercase px-4 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
         {label}
       </span>
-      <div className="flex-1 h-px" style={{ backgroundColor: '#d4e4d8' }} />
+      <div className="flex-1 h-px bg-slate-200" />
     </div>
   )
 }
@@ -141,118 +167,228 @@ function TierLabel({ label }: { label: string }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AboutPage() {
+  const [perangkatList, setPerangkatList] = useState<OrgMember[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let isMounted = true
+    setLoading(true)
+
+    fetch('/api/perangkat')
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted && data.success && Array.isArray(data.data) && data.data.length > 0) {
+          const mapped: OrgMember[] = data.data.map((item: ApiPerangkat) => ({
+            id: item.id,
+            name: item.nama,
+            position: item.jabatan,
+            initials: getInitials(item.nama),
+            image: item.foto_url || undefined,
+          }))
+          setPerangkatList(mapped)
+        }
+      })
+      .catch((err) => {
+        console.warn('Backend /api/perangkat tidak terhubung, menggunakan data default:', err)
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  // Helper matcher
+  const findMember = (keywords: string[], fallback: OrgMember): OrgMember => {
+    if (perangkatList.length === 0) return fallback
+    const found = perangkatList.find((m) =>
+      keywords.some((k) => m.position.toLowerCase().includes(k.toLowerCase()))
+    )
+    return found || fallback
+  }
+
+  const findMembers = (keywords: string[], fallback: OrgMember[]): OrgMember[] => {
+    if (perangkatList.length === 0) return fallback
+    const matched = perangkatList.filter((m) =>
+      keywords.some((k) => m.position.toLowerCase().includes(k.toLowerCase()))
+    )
+    return matched.length > 0 ? matched : fallback
+  }
+
+  const kepalaDesa = findMember(['kepala desa', 'kades'], defaultKepalaDesa)
+  const kasiPelayanan = findMember(['pelayanan'], defaultKasiPelayanan)
+  const kasiPemerintahan = findMember(['kasi pemerintahan'], defaultKasiPemerintahan)
+  const stafPemerintahan = findMember(['staf'], defaultStafPemerintahan)
+  const kasiKesejahteraan = findMember(['kesejahteraan'], defaultKasiKesejahteraan)
+  const sekretarisDesa = findMember(['sekretaris'], defaultSekretarisDesa)
+  const kaurKeuangan = findMember(['keuangan'], defaultKaurKeuangan)
+  const kaurTU = findMember(['tata usaha', 'tu'], defaultKaurTU)
+  const kaurPerencanaan = findMember(['perencanaan'], defaultKaurPerencanaan)
+  const kamituwoList = findMembers(['kamituwo'], defaultKamituwoList)
+
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#f4f9f6' }}>
+    <div className="min-h-screen bg-slate-50">
 
       {/* Page header */}
-      <div className="relative overflow-hidden" style={{ backgroundColor: '#0c1a30' }}>
+      <div className="relative overflow-hidden bg-slate-900">
         <div
-          className="absolute inset-0 opacity-[0.04]"
+          className="absolute inset-0 opacity-[0.05]"
           style={{
             backgroundImage: 'radial-gradient(circle at center, #fff 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
+            backgroundSize: '24px 24px',
           }}
           aria-hidden="true"
         />
         <div
-          className="absolute bottom-0 left-0 right-0 h-1"
-          style={{ background: 'linear-gradient(90deg, #065f46, #1e3a5f)' }}
+          className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600"
           aria-hidden="true"
         />
-        <div className="relative max-w-5xl mx-auto px-6 lg:px-10 py-16 lg:py-20 text-center">
-          <span
-            className="inline-block text-xs font-semibold tracking-widest uppercase mb-4 px-4 py-1.5 rounded-full border"
-            style={{ borderColor: 'rgba(167,243,208,0.3)', color: '#a7f3d0', backgroundColor: 'rgba(6,95,70,0.25)' }}
-          >
-            Profil Desa
+        <div className="relative max-w-5xl mx-auto px-6 lg:px-10 py-14 lg:py-16 text-center">
+          <span className="inline-block text-xs font-semibold tracking-widest uppercase mb-3 px-4 py-1 rounded-full border border-emerald-500/30 text-emerald-400 bg-emerald-950/40">
+            Struktur Organisasi
           </span>
           <h1
-            className="text-4xl lg:text-5xl font-bold text-white mb-3"
+            className="text-3xl lg:text-4xl font-bold text-white mb-2"
             style={{ fontFamily: 'var(--font-display)' }}
           >
-            Pemerintahan Desa Banjarejo
+            Pemerintah Desa Banjarejo
           </h1>
-          <p className="text-base" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            Desa Banjarejo · Kecamatan Panekan · Kabupaten Magetan · Jawa Timur
+          <p className="text-sm text-slate-400">
+            Bagan Struktur Organisasi dan Tata Kerja Pemerintah Desa Banjarejo
           </p>
         </div>
       </div>
 
-      {/* Org chart */}
-      <div className="max-w-4xl mx-auto px-6 lg:px-10 py-14 lg:py-20">
+      {/* Main Org Chart Container */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
 
-        {/* Tier 1 — Kepala Desa */}
-        <div className="flex justify-center">
-          <div className="w-full max-w-xs">
-            <ProfileCard member={headVillage} size="lg" />
-          </div>
-        </div>
-
-        <TierLabel label="Perangkat Desa" />
-
-        {/* Tier 2 — Sekretaris + BPD */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-xl mx-auto">
-          {secondTier.map((m) => (
-            <ProfileCard key={m.name} member={m} size="md" />
-          ))}
-        </div>
-
-        <TierLabel label="Kepala Dukuh" />
-
-        {/* Tier 3 — Kamituwo (exactly 3 dukuh) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          {kamituwo.map((m) => (
-            <ProfileCard key={m.name} member={m} size="sm" />
-          ))}
-        </div>
-
-        {/* ── Additional Info Sections ── */}
-        
-        <div id="profil-desa" className="mt-20 pt-10 border-t border-emerald-900/10">
-          <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'var(--font-display)', color: '#0c1a30' }}>Profil Desa</h2>
-          <p className="text-sm leading-relaxed" style={{ color: '#4a6475' }}>
-            Desa Banjarejo adalah sebuah desa agraris yang terletak di Kecamatan Panekan, Kabupaten Magetan. Dengan luas wilayah sekitar 147 Hektar, desa ini menjadi rumah bagi lebih dari 2.800 jiwa yang mayoritas bermatapencaharian sebagai petani dan pelaku UMKM. Desa Banjarejo memiliki tiga dukuh utama: Ngasem, Ngrombo, dan Genjeng, masing-masing dengan keunikan budaya dan potensi ekonomi yang khas.
-          </p>
-        </div>
-
-        <div id="apbdes" className="mt-12 pt-10 border-t border-emerald-900/10">
-          <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'var(--font-display)', color: '#0c1a30' }}>APBDes Publik</h2>
-          <p className="text-sm leading-relaxed mb-4" style={{ color: '#4a6475' }}>
-            Sebagai bentuk transparansi pemerintahan, berikut adalah ringkasan Anggaran Pendapatan dan Belanja Desa (APBDes) Tahun 2026:
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white p-5 rounded-xl border transition-shadow hover:shadow-md" style={{ borderColor: '#e2ede8' }}>
-              <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: '#0a7c5c' }}>Pendapatan Desa</p>
-              <p className="text-2xl font-bold" style={{ color: '#0c1a30' }}>Rp 1.450.000.000</p>
+        {/* Desktop Visual Tree / Mobile Grid Layout */}
+        <div className="bg-white p-6 sm:p-10 rounded-2xl border border-slate-200 shadow-sm mb-12 relative">
+          
+          {loading && (
+            <div className="absolute top-4 right-4 flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full animate-pulse">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              Menghubungkan data backend...
             </div>
-            <div className="bg-white p-5 rounded-xl border transition-shadow hover:shadow-md" style={{ borderColor: '#e2ede8' }}>
-              <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: '#1e3a5f' }}>Belanja Desa</p>
-              <p className="text-2xl font-bold" style={{ color: '#0c1a30' }}>Rp 1.425.000.000</p>
+          )}
+
+          <div className="text-center mb-8 border-b pb-4 border-slate-100">
+            <h2 className="text-xl font-bold text-slate-800" style={{ fontFamily: 'var(--font-display)' }}>
+              Bagan Struktur Organisasi Desa Banjarejo
+            </h2>
+            <p className="text-xs text-slate-500 mt-1">Sesuai Susunan Penyelenggara Pemerintahan Desa</p>
+          </div>
+
+          {/* Tier 1: Kepala Desa */}
+          <div className="flex justify-center mb-8 relative">
+            <div className="w-64 max-w-full">
+              <OrgCard member={kepalaDesa} size="lg" accentColor="bg-emerald-700" />
             </div>
           </div>
+
+          {/* Connecting Line Down from Kepala Desa (Visible on md+) */}
+          <div className="hidden md:block w-0.5 h-8 bg-slate-300 mx-auto -mt-6 mb-2" />
+
+          {/* Horizontal Connector Line for Kasi vs Sekretaris */}
+          <div className="hidden md:block relative max-w-4xl mx-auto h-0.5 bg-slate-300 mb-8">
+            <div className="absolute left-1/2 -top-2 w-0.5 h-2 bg-slate-300" />
+          </div>
+
+          {/* Tier 2: Kasi Side (Left) and Sekretaris Side (Right) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start max-w-5xl mx-auto">
+            
+            {/* LEFT COLUMN: Kasi Group */}
+            <div className="flex flex-col gap-6 p-4 rounded-xl bg-slate-50/70 border border-slate-200/60">
+              <div className="text-xs font-bold text-slate-500 tracking-wider uppercase text-center border-b border-slate-200 pb-2">
+                Unsur Pelaksana (KASI)
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Kasi Pelayanan */}
+                <OrgCard member={kasiPelayanan} size="sm" accentColor="bg-emerald-700" />
+
+                {/* Kasi Pemerintahan + Staf */}
+                <div className="flex flex-col items-center gap-3">
+                  <OrgCard member={kasiPemerintahan} size="sm" accentColor="bg-emerald-700" />
+                  
+                  {/* Connector Line to Staf */}
+                  <div className="w-0.5 h-3 bg-slate-300 -my-1" />
+                  
+                  {/* Staf Muji */}
+                  <OrgCard member={stafPemerintahan} size="sm" accentColor="bg-emerald-800" />
+                </div>
+
+                {/* Kasi Kesejahteraan */}
+                <OrgCard member={kasiKesejahteraan} size="sm" accentColor="bg-emerald-700" />
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN: Sekretaris Desa & Kaur Group */}
+            <div className="flex flex-col gap-6 p-4 rounded-xl bg-slate-50/70 border border-slate-200/60">
+              <div className="text-xs font-bold text-slate-500 tracking-wider uppercase text-center border-b border-slate-200 pb-2">
+                Unsur Sekretariat (SEKRETARIS & KAUR)
+              </div>
+
+              {/* Sekretaris Desa */}
+              <div className="w-full max-w-xs mx-auto">
+                <OrgCard member={sekretarisDesa} size="md" accentColor="bg-emerald-700" />
+              </div>
+
+              {/* Connector Line to Kaur */}
+              <div className="hidden sm:block w-0.5 h-3 bg-slate-300 mx-auto -my-3" />
+
+              {/* Kaur Grid (3 columns) */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <OrgCard member={kaurKeuangan} size="sm" accentColor="bg-emerald-700" />
+                <OrgCard member={kaurTU} size="sm" accentColor="bg-emerald-700" />
+                <OrgCard member={kaurPerencanaan} size="sm" accentColor="bg-emerald-700" />
+              </div>
+            </div>
+
+          </div>
+
+          <TierLabel label="Unsur Kewilayahan (Kamituwo)" />
+
+          {/* Tier 3: Kamituwo */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {kamituwoList.map((kamituwo, idx) => (
+              <OrgCard key={kamituwo.id || `${kamituwo.name}-${idx}`} member={kamituwo} size="md" accentColor="bg-emerald-700" />
+            ))}
+          </div>
+
         </div>
 
-        <div id="komunitas" className="mt-12 pt-10 border-t border-emerald-900/10">
-          <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'var(--font-display)', color: '#0c1a30' }}>Program Komunitas</h2>
-          <ul className="list-disc pl-5 text-sm space-y-3" style={{ color: '#4a6475' }}>
-            <li><strong>Pemberdayaan UMKM:</strong> Pelatihan rutin bagi pelaku usaha mikro di ketiga dukuh untuk digitalisasi.</li>
-            <li><strong>Posyandu & Kesehatan:</strong> Pemeriksaan gratis untuk balita dan lansia setiap bulan di balai desa.</li>
-            <li><strong>Kerja Bakti Rutin:</strong> Pembersihan fasilitas umum dan saluran irigasi secara gotong royong setiap minggu pertama.</li>
-          </ul>
-        </div>
+        {/* Additional Info Sections */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h2 className="text-lg font-bold mb-3 text-slate-800" style={{ fontFamily: 'var(--font-display)' }}>
+              Profil Singkat Desa
+            </h2>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Desa Banjarejo adalah desa di wilayah pemerintahan daerah yang berkomitmen pada pelayanan publik transparan dan akuntabel. Struktur organisasi ini bertugas menjalankan fungsi pelayanan, kesejahteraan, pembangunan, serta tata kelola pemerintahan desa.
+            </p>
+          </div>
 
-        <div id="peraturan" className="mt-12 pt-10 border-t border-emerald-900/10">
-          <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'var(--font-display)', color: '#0c1a30' }}>Peraturan Desa</h2>
-          <p className="text-sm leading-relaxed" style={{ color: '#4a6475' }}>
-            Seluruh produk hukum, Peraturan Desa (Perdes), dan Surat Keputusan Kepala Desa dapat diakses secara publik oleh warga di Kantor Pelayanan Desa pada jam kerja operasional. Kami berkomitmen untuk selalu mensosialisasikan peraturan baru melalui forum musyawarah tingkat RT/RW.
-          </p>
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h2 className="text-lg font-bold mb-3 text-slate-800" style={{ fontFamily: 'var(--font-display)' }}>
+              Tugas & Fungsi Perangkat
+            </h2>
+            <ul className="text-sm text-slate-600 space-y-2 list-disc pl-5">
+              <li><strong>Sekretaris Desa & Kaur:</strong> Menyelenggarakan administrasi, keuangan, tata usaha, dan perencanaan desa.</li>
+              <li><strong>Kasi:</strong> Pelaksanaan teknis pelayanan, pemerintahan, dan kesejahteraan masyarakat.</li>
+              <li><strong>Kamituwo:</strong> Penyelenggaraan ketenteraman, ketertiban, dan pembinaan di wilayah dusun/dukuh.</li>
+            </ul>
+          </div>
         </div>
 
         {/* Footer note */}
-        <p className="text-center text-xs mt-16 pt-8 border-t" style={{ borderColor: '#d4e4d8', color: '#9ab8a8' }}>
-          Data diperbarui: Agustus 2026 · Pemerintah Desa Banjarejo, Kec. Panekan, Kab. Magetan
+        <p className="text-center text-xs mt-12 pt-6 border-t border-slate-200 text-slate-400">
+          Pemerintah Desa Banjarejo · Bagan Struktur Organisasi Resmi
         </p>
       </div>
     </div>
   )
 }
+

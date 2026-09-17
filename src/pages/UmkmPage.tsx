@@ -189,8 +189,8 @@ function BusinessCard({ biz }: { biz: Business }) {
             style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)' }}
           >
             <svg width="14" height="10" viewBox="0 0 90 63" fill="#ff0000">
-              <path d="M88.2 9.8C87.1 5.7 84 2.5 80 1.4 73 0 45 0 45 0S17 0 10 1.4C6 2.5 2.9 5.7 1.8 9.8 0 16.8 0 31.5 0 31.5s0 14.7 1.8 21.7c1.1 4.1 4.2 7.3 8.2 8.4C17 63 45 63 45 63s28 0 35-1.4c4-1.1 7.1-4.3 8.2-8.4 1.8-7 1.8-21.7 1.8-21.7s0-14.7-1.8-21.7z"/>
-              <path d="M36 45L59 31.5 36 18z" fill="#fff"/>
+              <path d="M88.2 9.8C87.1 5.7 84 2.5 80 1.4 73 0 45 0 45 0S17 0 10 1.4C6 2.5 2.9 5.7 1.8 9.8 0 16.8 0 31.5 0 31.5s0 14.7 1.8 21.7c1.1 4.1 4.2 7.3 8.2 8.4C17 63 45 63 45 63s28 0 35-1.4c4-1.1 7.1-4.3 8.2-8.4 1.8-7 1.8-21.7 1.8-21.7s0-14.7-1.8-21.7z" />
+              <path d="M36 45L59 31.5 36 18z" fill="#fff" />
             </svg>
             <span className="text-xs text-white font-medium opacity-80">Profil Video UMKM</span>
           </div>
@@ -214,7 +214,7 @@ function BusinessCard({ biz }: { biz: Business }) {
       </div>
 
       {/* ── Body ── */}
-      <div className="flex flex-col flex-1 p-5">
+      <div className="flex flex-col flex-1 p-5 text-left">
         {/* Owner + since */}
         <div className="flex items-center gap-3 mb-3">
           <div
@@ -223,39 +223,43 @@ function BusinessCard({ biz }: { biz: Business }) {
           >
             {biz.owner.split(' ').map(w => w[0]).join('').slice(0, 2)}
           </div>
-          <div>
-            <p className="text-xs font-semibold leading-none" style={{ color: '#0c1a30' }}>{biz.owner}</p>
+          <div className="flex flex-col justify-center">
+            <p className="text-xs font-semibold leading-tight text-left" style={{ color: '#0c1a30' }}>{biz.owner}</p>
             <div className="flex items-center gap-1 mt-0.5" style={{ color: '#9ab8a8' }}>
               <CalendarIcon />
-              <span className="text-xs">Sejak {biz.since}</span>
+              <span className="text-xs leading-none">Sejak {biz.since}</span>
             </div>
           </div>
         </div>
 
         {/* Name */}
-        <h3
-          className="text-xl font-bold leading-snug mb-2"
-          style={{ fontFamily: 'var(--font-display)', color: '#0c1a30' }}
-        >
-          {biz.name}
-        </h3>
+        <div className="min-h-[3rem] flex items-center mb-2">
+          <h3
+            className="text-xl font-bold leading-snug text-left line-clamp-2"
+            style={{ fontFamily: 'var(--font-display)', color: '#0c1a30' }}
+          >
+            {biz.name}
+          </h3>
+        </div>
 
         {/* Description */}
-        <p
-          className="text-sm leading-relaxed mb-4 flex-1"
-          style={{
-            color: '#6b7f8a',
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}
-        >
-          {biz.description}
-        </p>
+        <div className="min-h-[4.25rem] mb-4 flex-1">
+          <p
+            className="text-sm leading-relaxed text-left"
+            style={{
+              color: '#6b7f8a',
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {biz.description}
+          </p>
+        </div>
 
         {/* Location */}
-        <div className="flex items-center gap-1.5 mb-5" style={{ color: '#9ab8a8' }}>
+        <div className="flex items-center gap-1.5 mb-5 text-left" style={{ color: '#9ab8a8' }}>
           <PinIcon />
           <span className="text-xs font-medium">{biz.location}, Desa Banjarejo</span>
         </div>
@@ -310,15 +314,15 @@ function RegistrationModal({ onClose }: { onClose: () => void }) {
     if (!/^\d{16}$/.test(form.nik)) e.nik = 'NIK harus 16 digit'
     if (!/^\d{9,13}$/.test(form.hp.replace(/\D/g, ''))) e.hp = 'Nomor tidak valid'
     if (!form.dukuh) e.dukuh = 'Pilih dukuh'
-    if (!form.jenis) e.jenis = 'Pilih jenis layanan'
+    if (!form.jenis) e.jenis = 'Pilih jenis layanan' as any
     if (form.jenis === 'pinjaman' && !form.jumlah.trim()) e.jumlah = 'Wajib diisi'
     if (form.jenis === 'pinjaman' && !form.tujuan.trim()) e.tujuan = 'Wajib diisi'
     setErrors(e)
     return Object.keys(e).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => { 
-    e.preventDefault(); 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (validate()) {
       try {
         await fetch('http://localhost:5000/api/bumdes/register', {
@@ -723,16 +727,16 @@ export default function UmkmPage() {
       {/* ── Stats strip ──────────────────────────────────────────────────────── */}
       <div className="bg-white border-b" style={{ borderColor: '#e8f0eb' }}>
         <div className="max-w-7xl mx-auto px-6 lg:px-10 py-5">
-          <div className="flex flex-wrap items-center gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 items-center">
             {[
               { value: '6+', label: 'UMKM Terdaftar' },
               { value: '3', label: 'Dukuh Aktif Usaha' },
               { value: 'Rp 95 Jt', label: 'Omzet BUMDes S1 2026' },
               { value: '60', label: 'Anggota Koperasi' },
-            ].map((s) => (
-              <div key={s.label} className="flex items-baseline gap-2">
-                <span className="text-xl font-bold" style={{ color: '#065f46', fontFamily: 'var(--font-display)' }}>{s.value}</span>
-                <span className="text-sm" style={{ color: '#6b7f8a' }}>{s.label}</span>
+            ].map((s, idx) => (
+              <div key={s.label} className={`flex items-baseline gap-2.5 ${idx !== 0 ? 'md:border-l md:border-emerald-100 md:pl-6' : ''}`}>
+                <span className="text-xl font-bold whitespace-nowrap" style={{ color: '#065f46', fontFamily: 'var(--font-display)' }}>{s.value}</span>
+                <span className="text-xs font-medium leading-tight" style={{ color: '#6b7f8a' }}>{s.label}</span>
               </div>
             ))}
           </div>

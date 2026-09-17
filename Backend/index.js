@@ -11,6 +11,8 @@ import newsRouter from './routes/news.js';
 import umkmRouter from './routes/umkm.js';
 import wargaRouter from './routes/warga.js';
 import pengumumanRouter from './routes/pengumuman.js';
+import authRouter from './routes/auth.js';
+import perangkatRouter from './routes/perangkat.js';
 
 dotenv.config();
 
@@ -50,7 +52,7 @@ app.get('/api/health', (req, res) => {
     endpoints: [
       '/api/services', '/api/search', '/api/contact',
       '/api/bumdes', '/api/news', '/api/umkm',
-      '/api/warga', '/api/pengumuman'
+      '/api/warga', '/api/pengumuman', '/api/perangkat', '/api/auth'
     ],
     timestamp: new Date().toISOString()
   });
@@ -65,6 +67,8 @@ app.use('/api/news',        newsRouter);
 app.use('/api/umkm',        umkmRouter);
 app.use('/api/warga',       wargaRouter);
 app.use('/api/pengumuman',  pengumumanRouter);
+app.use('/api/auth',        authRouter);
+app.use('/api/perangkat',   perangkatRouter);
 
 // ── Global 404 Handler ───────────────────────────────────────
 app.use((req, res) => {

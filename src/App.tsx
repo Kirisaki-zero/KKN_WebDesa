@@ -170,30 +170,30 @@ export default function App() {
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <button className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('home', 'home')}>
+          <button className="flex items-center gap-3 cursor-pointer text-left" onClick={() => navigate('home', 'home')}>
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
               style={{ backgroundColor: '#065f46' }}
             >
               <HamletIcon />
             </div>
-            <div>
+            <div className="text-left flex flex-col justify-center">
               <p className="text-white font-semibold text-sm leading-tight tracking-wide">Desa Banjarejo</p>
               <p className="text-emerald-200 text-xs leading-tight tracking-widest uppercase">Panekan · Magetan</p>
             </div>
           </button>
 
           {/* Desktop links */}
-          <ul className="hidden lg:flex items-center gap-8">
+          <ul className="hidden lg:flex items-center gap-8 h-full">
             {navLinks.map((link) => {
               const isActive =
                 (link.page === currentPage && link.page !== 'home') ||
                 (link.page === 'home' && currentPage === 'home' && link.label === 'Home')
               return (
-                <li key={link.label}>
+                <li key={link.label} className="flex items-center">
                   <button
                     onClick={() => navigate(link.page, link.anchor)}
-                    className="text-sm font-medium tracking-wide transition-colors duration-200 cursor-pointer"
+                    className="text-sm font-medium tracking-wide leading-none transition-colors duration-200 cursor-pointer text-left"
                     style={{ color: isActive ? '#a7f3d0' : 'rgba(255,255,255,0.75)' }}
                     onMouseEnter={(e) => { if (!isActive) (e.target as HTMLElement).style.color = 'white' }}
                     onMouseLeave={(e) => { if (!isActive) (e.target as HTMLElement).style.color = 'rgba(255,255,255,0.75)' }}
@@ -502,7 +502,7 @@ export default function App() {
                 className="text-4xl lg:text-5xl font-bold"
                 style={{ fontFamily: 'var(--font-display)', color: '#0c1a30' }}
               >
-                Lokasi Desa
+                Lokasi Kantor Desa
               </h2>
               <p className="mt-3 text-base" style={{ color: '#4a6475' }}>
                 Kecamatan Panekan, Kabupaten Magetan, Jawa Timur
