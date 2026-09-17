@@ -11,7 +11,6 @@ interface Business {
   description: string
   location: string
   dukuh: string
-  whatsapp: string
   instagram: string
   thumbnail: string
   owner: string
@@ -28,7 +27,6 @@ const businesses: Business[] = [
     description: 'Kerupuk puli tradisional berbahan singkong pilihan, diproses secara higienis oleh keluarga Pak Slamet sejak tiga generasi. Dipasarkan ke seluruh Kabupaten Magetan.',
     location: 'Dukuh Ngasem',
     dukuh: 'Ngasem',
-    whatsapp: '6281234567801',
     instagram: 'kerupukpuli_banjarejo',
     thumbnail: 'https://images.unsplash.com/photo-1604908177524-83cf2e3e7c34?w=600&h=340&fit=crop&auto=format',
     owner: 'Slamet Riyadi',
@@ -41,7 +39,6 @@ const businesses: Business[] = [
     description: 'Keripik tempe renyah berbumbu rempah khas Jawa Timur. Diproduksi dari kedelai lokal non-GMO, tanpa pengawet, tersedia dalam kemasan 100g, 250g, dan 500g.',
     location: 'Dukuh Ngrombo',
     dukuh: 'Ngrombo',
-    whatsapp: '6281234567802',
     instagram: 'keripiktempe_ngrombo',
     thumbnail: 'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=600&h=340&fit=crop&auto=format',
     owner: 'Dewi Rahayu',
@@ -54,7 +51,6 @@ const businesses: Business[] = [
     description: 'Usaha ternak ayam petelur modern kapasitas 800 ekor. Telur segar didistribusikan harian ke pasar Panekan dan Magetan kota. Pembelian partai besar tersedia.',
     location: 'Dukuh Genjeng',
     dukuh: 'Genjeng',
-    whatsapp: '6281234567803',
     instagram: 'peternakanbanjarejo',
     thumbnail: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&h=340&fit=crop&auto=format',
     owner: 'Agus Wibowo',
@@ -67,7 +63,6 @@ const businesses: Business[] = [
     description: 'Jamu gendong dan kemasan dari rempah-rempah pilihan: beras kencur, kunyit asam, dan jahe merah. Resep turun-temurun, tersedia grosir untuk warung dan apotek.',
     location: 'Dukuh Ngasem',
     dukuh: 'Ngasem',
-    whatsapp: '6281234567804',
     instagram: 'jamu_mbokinem',
     thumbnail: 'https://images.unsplash.com/photo-1596854407944-bf87f6fdd49e?w=600&h=340&fit=crop&auto=format',
     owner: 'Suparinem',
@@ -80,7 +75,6 @@ const businesses: Business[] = [
     description: 'Anyaman bambu berkualitas tinggi: tampah, bakul, caping, dan furnitur dekorasi. Menerima pesanan custom untuk souvenir pernikahan dan oleh-oleh khas Magetan.',
     location: 'Dukuh Genjeng',
     dukuh: 'Genjeng',
-    whatsapp: '6281234567805',
     instagram: 'bambu_genjeng',
     thumbnail: 'https://images.unsplash.com/photo-1587160688793-e5d7d2e4e234?w=600&h=340&fit=crop&auto=format',
     owner: 'Poniman Susanto',
@@ -93,7 +87,6 @@ const businesses: Business[] = [
     description: 'Kolam lele organik sistem bioflok dengan kapasitas panen 2 ton per siklus. Benih dan pakan alami diproduksi sendiri. Siap mitra dengan rumah makan dan pengepul.',
     location: 'Dukuh Ngrombo',
     dukuh: 'Ngrombo',
-    whatsapp: '6281234567806',
     instagram: 'lelebanjarejo',
     thumbnail: 'https://images.unsplash.com/photo-1574781330855-d0db8cc6a79c?w=600&h=340&fit=crop&auto=format',
     owner: 'Yanto Prasetyo',
@@ -105,22 +98,9 @@ const businesses: Business[] = [
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 
-const PlayIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M8 5v14l11-7z" />
-  </svg>
-)
-
 const PinIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
-  </svg>
-)
-
-const WhatsAppIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
-    <path d="M12.004 2C6.477 2 2 6.477 2 12.004c0 1.77.465 3.435 1.28 4.887L2 22l5.25-1.378A9.954 9.954 0 0 0 12.004 22C17.531 22 22 17.523 22 12.004 22 6.477 17.531 2 12.004 2z" />
   </svg>
 )
 
@@ -141,24 +121,20 @@ const CalendarIcon = () => (
 // ── Business Card ─────────────────────────────────────────────────────────────
 
 function BusinessCard({ biz }: { biz: Business }) {
-  const [playing, setPlaying] = useState(false)
-
   return (
     <article
       className="group flex flex-col bg-white rounded-2xl overflow-hidden border transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
       style={{ borderColor: '#e8f0eb', boxShadow: '0 2px 16px rgba(6,95,70,0.07)' }}
     >
-      {/* ── Video placeholder ── */}
+      {/* ── Gambar Tampilan Produk ── */}
       <div
-        className="relative overflow-hidden flex-shrink-0 cursor-pointer"
+        className="relative overflow-hidden flex-shrink-0"
         style={{ height: '200px', backgroundColor: '#0c1a30' }}
-        onClick={() => setPlaying(true)}
       >
         <img
           src={biz.thumbnail}
           alt={biz.name}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          style={{ filter: playing ? 'brightness(1)' : 'brightness(0.75)' }}
           loading="lazy"
         />
 
@@ -169,48 +145,6 @@ function BusinessCard({ biz }: { biz: Business }) {
         >
           {biz.category}
         </span>
-
-        {/* YouTube-style play button */}
-        {!playing && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div
-              className="w-14 h-14 rounded-full flex items-center justify-center transition-transform duration-200 group-hover:scale-110"
-              style={{ backgroundColor: '#ff0000', boxShadow: '0 4px 20px rgba(255,0,0,0.45)', paddingLeft: '4px' }}
-            >
-              <PlayIcon />
-            </div>
-          </div>
-        )}
-
-        {/* YouTube branding strip */}
-        {!playing && (
-          <div
-            className="absolute bottom-0 left-0 right-0 px-3 py-1.5 flex items-center gap-1.5"
-            style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)' }}
-          >
-            <svg width="14" height="10" viewBox="0 0 90 63" fill="#ff0000">
-              <path d="M88.2 9.8C87.1 5.7 84 2.5 80 1.4 73 0 45 0 45 0S17 0 10 1.4C6 2.5 2.9 5.7 1.8 9.8 0 16.8 0 31.5 0 31.5s0 14.7 1.8 21.7c1.1 4.1 4.2 7.3 8.2 8.4C17 63 45 63 45 63s28 0 35-1.4c4-1.1 7.1-4.3 8.2-8.4 1.8-7 1.8-21.7 1.8-21.7s0-14.7-1.8-21.7z"/>
-              <path d="M36 45L59 31.5 36 18z" fill="#fff"/>
-            </svg>
-            <span className="text-xs text-white font-medium opacity-80">Profil Video UMKM</span>
-          </div>
-        )}
-
-        {/* Playing state — show embedded YouTube (demo) */}
-        {playing && (
-          <div className="absolute inset-0 bg-black flex items-center justify-center">
-            <div className="text-center text-white">
-              <div className="text-4xl mb-2">▶</div>
-              <p className="text-xs opacity-60">Video profil usaha</p>
-              <button
-                className="mt-3 text-xs underline opacity-50 cursor-pointer"
-                onClick={(e) => { e.stopPropagation(); setPlaying(false) }}
-              >
-                Tutup
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ── Body ── */}
@@ -263,24 +197,15 @@ function BusinessCard({ biz }: { biz: Business }) {
         {/* CTA row */}
         <div className="flex items-center gap-2 mt-auto">
           <a
-            href={`http://localhost:5000/api/contact/${biz.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold text-white transition-all duration-200 hover:brightness-110 active:scale-95"
-            style={{ backgroundColor: '#25d366' }}
-          >
-            <WhatsAppIcon />
-            WhatsApp
-          </a>
-          <a
             href={`https://instagram.com/${biz.instagram}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-10 h-10 flex items-center justify-center rounded-lg border-2 transition-all duration-200 hover:border-pink-400 hover:text-pink-500 flex-shrink-0"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold border-2 transition-all duration-200 hover:border-pink-400 hover:text-pink-500 hover:bg-pink-50/50"
             style={{ borderColor: '#e8f0eb', color: '#6b7f8a' }}
             aria-label="Instagram"
           >
             <InstagramIcon />
+            <span>@{biz.instagram}</span>
           </a>
         </div>
       </div>
@@ -380,7 +305,7 @@ function RegistrationModal({ onClose }: { onClose: () => void }) {
             </div>
             <h4 className="text-xl font-bold mb-2" style={{ fontFamily: 'var(--font-display)', color: '#0c1a30' }}>Pendaftaran Diterima</h4>
             <p className="text-sm leading-relaxed mb-6" style={{ color: '#6b7f8a' }}>
-              Terima kasih, <strong style={{ color: '#0c1a30' }}>{form.nama}</strong>. Pengurus BUM Desa akan menghubungi Anda melalui WhatsApp dalam 1–2 hari kerja untuk konfirmasi dan tahap selanjutnya.
+              Terima kasih, <strong style={{ color: '#0c1a30' }}>{form.nama}</strong>. Pengurus BUM Desa akan menghubungi Anda melalui nomor telepon / kontak terdaftar dalam 1–2 hari kerja untuk konfirmasi dan tahap selanjutnya.
             </p>
             <div className="w-full rounded-xl px-5 py-4 text-left mb-6 text-sm space-y-1" style={{ backgroundColor: '#f8faf9', border: '1px solid #e8f0eb' }}>
               <p className="font-semibold mb-2" style={{ color: '#0c1a30' }}>Ringkasan</p>
@@ -410,7 +335,7 @@ function RegistrationModal({ onClose }: { onClose: () => void }) {
                 {errors.nik && <p className="text-xs mt-1" style={{ color: '#f87171' }}>{errors.nik}</p>}
               </div>
               <div>
-                <label className="block text-xs font-bold mb-1.5" style={{ color: '#374151' }}>No. WhatsApp <span style={{ color: '#f87171' }}>*</span></label>
+                <label className="block text-xs font-bold mb-1.5" style={{ color: '#374151' }}>No. Telepon / HP <span style={{ color: '#f87171' }}>*</span></label>
                 <input type="tel" placeholder="08xxxxxxxxxx" value={form.hp} onChange={e => set('hp', e.target.value)} style={fieldStyle('hp')} />
                 {errors.hp && <p className="text-xs mt-1" style={{ color: '#f87171' }}>{errors.hp}</p>}
               </div>
@@ -806,16 +731,12 @@ export default function UmkmPage() {
                   Daftarkan UMKM Anda agar tampil di direktori ini dan jangkau lebih banyak pelanggan.
                 </p>
               </div>
-              <a
-                href="https://wa.me/6281234567800"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-shrink-0 inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold text-white transition-all duration-200 hover:brightness-110"
+              <div
+                className="flex-shrink-0 inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold text-white"
                 style={{ backgroundColor: '#065f46' }}
               >
-                <WhatsAppIcon />
-                Daftarkan Usaha
-              </a>
+                Hubungi Balai Desa Banjarejo
+              </div>
             </div>
           </div>
         )}
