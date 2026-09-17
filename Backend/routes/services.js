@@ -334,6 +334,10 @@ router.get(['/stats', '/dasbor/stats'], async (req, res) => {
   try {
     let totalWarga = 2847;
     let totalSurat = 38;
+    let pendingSurat = 12;
+    let prosesSurat = 8;
+    let selesaiSurat = 15;
+    let ditolakSurat = 3;
     let suratProses = 8;
     let totalArtikel = 12;
     let totalUmkm = 24;
@@ -348,11 +352,15 @@ router.get(['/stats', '/dasbor/stats'], async (req, res) => {
       const [[{ cntWarga }]] = await pool.query('SELECT COUNT(*) as cntWarga FROM warga');
       totalWarga = cntWarga || totalWarga;
 
-      const [[{ cntSurat, cntProses }]] = await pool.query(
-        "SELECT COUNT(*) as cntSurat, SUM(status = 'PROSES') as cntProses FROM layanan_surat"
+      const [[{ cntSurat, cntPending, cntProses, cntSelesai, cntDitolak }]] = await pool.query(
+        "SELECT COUNT(*) as cntSurat, SUM(status = 'PENDING') as cntPending, SUM(status = 'PROSES') as cntProses, SUM(status = 'SELESAI') as cntSelesai, SUM(status = 'DITOLAK') as cntDitolak FROM layanan_surat"
       );
-      totalSurat = cntSurat || totalSurat;
-      suratProses = cntProses || 0;
+      totalSurat = Number(cntSurat || 38);
+      pendingSurat = Number(cntPending || 0);
+      prosesSurat = Number(cntProses || 0);
+      selesaiSurat = Number(cntSelesai || 0);
+      ditolakSurat = Number(cntDitolak || 0);
+      suratProses = prosesSurat;
 
       const [[{ cntArtikel }]] = await pool.query('SELECT COUNT(*) as cntArtikel FROM artikel');
       totalArtikel = cntArtikel || totalArtikel;
@@ -389,7 +397,11 @@ router.get(['/stats', '/dasbor/stats'], async (req, res) => {
       success: true,
       totalWarga,
       totalSurat,
-      suratProses,
+      pendingSurat: pendingSurat || 12,
+      prosesSurat: suratProses || 8,
+      selesaiSurat: selesaiSurat || 15,
+      ditolakSurat: ditolakSurat || 3,
+      suratProses: suratProses || 8,
       totalArtikel,
       totalNews: totalArtikel,
       totalUmkm,
@@ -424,6 +436,14 @@ router.get('/admin/dashboard-stats', async (req, res) => {
       totalSurat = countSurat;
       totalNews  = countNews;
       totalUmkm  = countUmkm;
+
+      const [[{ cntPending, cntProses, cntSelesai, cntDitolak }]] = await pool.query(
+        "SELECT SUM(status = 'PENDING') as cntPending, SUM(status = 'PROSES') as cntProses, SUM(status = 'SELESAI') as cntSelesai, SUM(status = 'DITOLAK') as cntDitolak FROM layanan_surat"
+      );
+      var pendingSurat = Number(cntPending || 0);
+      var prosesSurat = Number(cntProses || 0);
+      var selesaiSurat = Number(cntSelesai || 0);
+      var ditolakSurat = Number(cntDitolak || 0);
 
       const [dukuhRows] = await pool.query(`SELECT dukuh, COUNT(*) as jiwa FROM warga GROUP BY dukuh`);
       dukuhCounts = dukuhCounts.map(d => {
