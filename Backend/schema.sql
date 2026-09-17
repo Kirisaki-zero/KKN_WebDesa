@@ -229,5 +229,5 @@ CREATE TABLE `admin_users` (
 
 -- Seed Admin User Default (password default: admin123 -> $2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vj2v8q4C4S)
 INSERT INTO `admin_users` (`username`, `password_hash`, `nama_lengkap`) VALUES
-('admin', '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vj2v8q4C4S', 'Administrator Desa');
+('admin', '$2b$10$AOFIRUJ..tlzUAYFozly5uiJmTOPMnDF4z9mto6uWEpQ/V4Nqx4xm', 'Administrator Desa');
 

@@ -13,6 +13,12 @@ import wargaRouter from './routes/warga.js';
 import pengumumanRouter from './routes/pengumuman.js';
 import authRouter from './routes/auth.js';
 import perangkatRouter from './routes/perangkat.js';
+import uploadRouter from './routes/upload.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -42,6 +48,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // ── Health Check ─────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
@@ -60,6 +67,9 @@ app.get('/api/health', (req, res) => {
 
 // ── Mount Routes ─────────────────────────────────────────────
 app.use('/api/services',    servicesRouter);
+app.use('/api/surat',       servicesRouter);
+app.use('/api/dasbor',      servicesRouter);
+app.use('/api/artikel',     newsRouter);
 app.use('/api/search',      searchRouter);
 app.use('/api/contact',     contactRouter);
 app.use('/api/bumdes',      bumdesRouter);
@@ -69,6 +79,7 @@ app.use('/api/warga',       wargaRouter);
 app.use('/api/pengumuman',  pengumumanRouter);
 app.use('/api/auth',        authRouter);
 app.use('/api/perangkat',   perangkatRouter);
+app.use('/api/upload',      uploadRouter);
 
 // ── Global 404 Handler ───────────────────────────────────────
 app.use((req, res) => {

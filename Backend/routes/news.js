@@ -146,55 +146,64 @@ router.get('/:id', async (req, res) => {
  * @route   POST /api/news
  * @desc    Create new article (Admin only)
  */
+
 router.post('/', async (req, res) => {
   try {
-    const { title, category, excerpt, isi, author, image, isFeatured } = req.body;
-    if (!title || !category || !excerpt) {
-      return res.status(400).json({ success: false, message: 'Judul, Kategori, dan Ringkasan wajib diisi.' });
+    const title = req.body.title || req.body.judul;
+    const category = req.body.category || req.body.kategori || 'Pemerintahan';
+    const excerpt = req.body.excerpt || req.body.ringkasan || '';
+    const isi = req.body.isi || req.body.konten || excerpt;
+    const author = req.body.author || req.body.penulis || 'Admin Desa';
+    const image = req.body.image || req.body.thumbnail || req.body.gambar_url || '';
+    const isFeatured = req.body.isFeatured || req.body.is_featured || req.body.featured ? 1 : 0;
+
+    if (!title) {
+      return res.status(400).json({ success: false, message: 'Judul artikel wajib diisi.' });
     }
     try {
       const [result] = await pool.query(
         `INSERT INTO artikel (judul, kategori, ringkasan, isi, penulis, gambar_url, is_featured, tanggal)
          VALUES (?, ?, ?, ?, ?, ?, ?, CURDATE())`,
-        [title, category, excerpt, isi || excerpt, author || 'Admin Desa', image || '', isFeatured ? 1 : 0]
+        [title, category, excerpt, isi, author, image, isFeatured]
       );
-      return res.status(201).json({ success: true, message: 'Artikel berhasil dibuat.', data: { id: result.insertId, title } });
+      return res.status(201).json({ success: true, message: 'Artikel berhasil dibuat.', data: { id: result.insertId, title, category } });
     } catch (dbErr) {
-      console.warn('DB Insert Artikel (demo mode):', dbErr.message);
+      console.warn('DB Insert Artikel:', dbErr.message);
+      return res.status(500).json({ success: false, message: dbErr.message });
     }
-    return res.status(201).json({ success: true, message: 'Artikel berhasil dibuat (mode demo).', data: { id: Date.now(), title, category } });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Gagal membuat artikel.', error: error.message });
   }
 });
 
-/**
- * @route   PUT /api/news/:id
- * @desc    Update article (Admin only)
- */
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, category, excerpt, isi, author, image, isFeatured } = req.body;
+    const title = req.body.title || req.body.judul;
+    const category = req.body.category || req.body.kategori;
+    const excerpt = req.body.excerpt || req.body.ringkasan;
+    const isi = req.body.isi || req.body.konten || excerpt;
+    const author = req.body.author || req.body.penulis || 'Admin Desa';
+    const image = req.body.image || req.body.thumbnail || req.body.gambar_url;
+    const isFeatured = req.body.isFeatured || req.body.is_featured || req.body.featured ? 1 : 0;
+
     try {
       await pool.query(
-        `UPDATE artikel SET judul=?, kategori=?, ringkasan=?, isi=?, penulis=?, gambar_url=?, is_featured=?
-         WHERE id_artikel=?`,
-        [title, category, excerpt, isi || excerpt, author, image, isFeatured ? 1 : 0, id]
+        `UPDATE artikel SET judul=COALESCE(?, judul), kategori=COALESCE(?, kategori), 
+                            ringkasan=COALESCE(?, ringkasan), isi=COALESCE(?, isi), 
+                            penulis=COALESCE(?, penulis), gambar_url=COALESCE(?, gambar_url), 
+                            is_featured=? WHERE id_artikel=?`,
+        [title, category, excerpt, isi, author, image, isFeatured, id]
       );
+      return res.json({ success: true, message: `Artikel ID ${id} berhasil diperbarui.` });
     } catch (dbErr) {
-      console.warn('DB Update Artikel (demo mode):', dbErr.message);
+      return res.status(500).json({ success: false, message: dbErr.message });
     }
-    return res.json({ success: true, message: `Artikel ID ${id} berhasil diperbarui.` });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Gagal memperbarui artikel.', error: error.message });
   }
 });
 
-/**
- * @route   DELETE /api/news/:id
- * @desc    Delete article (Admin only)
- */
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;

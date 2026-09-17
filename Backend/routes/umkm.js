@@ -132,53 +132,65 @@ router.get('/', async (req, res) => {
  * @route   POST /api/umkm
  * @desc    Add new UMKM business (Admin only)
  */
+
 router.post('/', async (req, res) => {
   try {
-    const { name, category, description, owner, dukuh, since, whatsapp, instagram, youtubeId, thumbnail } = req.body;
-    if (!name || !dukuh) return res.status(400).json({ success: false, message: 'Nama usaha dan dukuh wajib diisi.' });
+    const name = req.body.nama_usaha || req.body.name;
+    const category = req.body.kategori || req.body.category || 'Produk Olahan';
+    const description = req.body.deskripsi || req.body.description || '';
+    const owner = req.body.pemilik || req.body.owner || '';
+    const dukuh = req.body.dukuh || 'Ngasem';
+    const since = req.body.sejak || req.body.since || new Date().getFullYear();
+    const thumbnail = req.body.foto_produk || req.body.gambar_url || req.body.thumbnail || '';
+    const instagram = req.body.instagram || '';
+
+    if (!name) return res.status(400).json({ success: false, message: 'Nama usaha wajib diisi.' });
+
     try {
       const [result] = await pool.query(
         `INSERT INTO umkm (nama_usaha, kategori, deskripsi, pemilik, dukuh, sejak, whatsapp, instagram, youtube_id, gambar_url)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [name, category || 'Lainnya', description || '', owner || '', dukuh, since || new Date().getFullYear(), whatsapp || '', instagram || '', youtubeId || '', thumbnail || '']
+         VALUES (?, ?, ?, ?, ?, ?, '', ?, '', ?)`,
+        [name, category, description, owner, dukuh, since, instagram, thumbnail]
       );
-      return res.status(201).json({ success: true, message: 'UMKM berhasil ditambahkan.', data: { id: result.insertId, name } });
+      return res.status(201).json({ success: true, message: 'UMKM berhasil ditambahkan.', data: { id: result.insertId, name, category, dukuh } });
     } catch (dbErr) {
-      console.warn('DB Insert UMKM (demo mode):', dbErr.message);
+      return res.status(500).json({ success: false, message: dbErr.message });
     }
-    return res.status(201).json({ success: true, message: 'UMKM berhasil ditambahkan (mode demo).', data: { id: Date.now(), name, category, dukuh } });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Gagal menambah UMKM.', error: error.message });
   }
 });
 
-/**
- * @route   PUT /api/umkm/:id
- * @desc    Update UMKM data (Admin only)
- */
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, category, description, owner, dukuh, since, whatsapp, instagram, youtubeId, thumbnail } = req.body;
+    const name = req.body.nama_usaha || req.body.name;
+    const category = req.body.kategori || req.body.category;
+    const description = req.body.deskripsi || req.body.description;
+    const owner = req.body.pemilik || req.body.owner;
+    const dukuh = req.body.dukuh;
+    const since = req.body.sejak || req.body.since;
+    const thumbnail = req.body.foto_produk || req.body.gambar_url || req.body.thumbnail;
+    const instagram = req.body.instagram;
+
     try {
       await pool.query(
-        `UPDATE umkm SET nama_usaha=?, kategori=?, deskripsi=?, pemilik=?, dukuh=?, sejak=?, whatsapp=?, instagram=?, youtube_id=?, gambar_url=?
+        `UPDATE umkm SET nama_usaha=COALESCE(?, nama_usaha), kategori=COALESCE(?, kategori),
+                         deskripsi=COALESCE(?, deskripsi), pemilik=COALESCE(?, pemilik),
+                         dukuh=COALESCE(?, dukuh), sejak=COALESCE(?, sejak),
+                         instagram=COALESCE(?, instagram), gambar_url=COALESCE(?, gambar_url)
          WHERE id_umkm=?`,
-        [name, category, description, owner, dukuh, since, whatsapp, instagram, youtubeId, thumbnail, id]
+        [name, category, description, owner, dukuh, since, instagram, thumbnail, id]
       );
+      return res.json({ success: true, message: `UMKM ID ${id} berhasil diperbarui.` });
     } catch (dbErr) {
-      console.warn('DB Update UMKM (demo mode):', dbErr.message);
+      return res.status(500).json({ success: false, message: dbErr.message });
     }
-    return res.json({ success: true, message: `UMKM ID ${id} berhasil diperbarui.` });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Gagal memperbarui data UMKM.', error: error.message });
   }
 });
 
-/**
- * @route   DELETE /api/umkm/:id
- * @desc    Delete UMKM (Admin only)
- */
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
