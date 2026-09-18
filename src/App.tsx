@@ -79,36 +79,36 @@ const stats = [
   { label: 'Tiga Dukuh', value: '3', unit: 'Dukuh', subtext: 'Ngasem · Ngrombo · Genjeng', icon: <HamletIcon /> },
 ]
 
-const news = [
+const fallbackHomeNews = [
   {
     id: 1,
-    category: 'Infrastruktur',
+    category: 'Pemerintahan',
     categoryColor: 'bg-navy text-white',
-    title: 'Pengaspalan Jalan Dukuh Ngrombo Sepanjang 800 Meter Hampir Selesai',
-    excerpt: 'Tim pekerjaan umum desa telah menyelesaikan 90% pengaspalan jalan utama Dukuh Ngrombo, dan diperkirakan akan dibuka penuh pada akhir bulan ini.',
-    date: '12 Agustus 2026',
-    author: 'Budi Santoso',
-    image: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&h=380&fit=crop&auto=format',
+    title: 'Musyawarah Desa Banjarejo Sepakati Rencana Pembangunan Jangka Menengah 2027–2032',
+    excerpt: 'Seluruh elemen masyarakat Desa Banjarejo berkumpul di Balai Desa untuk menyepakati prioritas pembangunan lima tahun ke depan.',
+    date: '14 Agustus 2026',
+    author: 'Sudarmanto',
+    image: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?w=600&h=380&fit=crop&auto=format',
   },
   {
     id: 2,
-    category: 'Komunitas',
+    category: 'Pemerintahan',
     categoryColor: 'bg-emerald-dark text-white',
-    title: 'Festival Panen Raya Banjarejo Kembali Digelar September Ini',
-    excerpt: 'Warga diundang untuk menikmati tiga hari penuh pertunjukan seni, pasar produk lokal, dan kesenian tradisional dalam rangka merayakan warisan budaya desa.',
+    title: 'Realisasi APBDes Banjarejo Semester I 2026 Capai 74 Persen',
+    excerpt: 'Pemerintah Desa Banjarejo mempublikasikan laporan realisasi anggaran semester pertama dengan tingkat serapan 74% dari total pagu Rp 980 juta.',
     date: '10 Agustus 2026',
-    author: 'Sari Dewi',
-    image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&h=380&fit=crop&auto=format',
+    author: 'Sri Wahyuni',
+    image: 'https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?w=600&h=380&fit=crop&auto=format',
   },
   {
     id: 3,
-    category: 'Kesehatan',
+    category: 'Ekonomi',
     categoryColor: 'bg-navy-700 text-white',
-    title: 'Pemeriksaan Kesehatan Gratis Dibuka untuk Seluruh Warga Desa',
-    excerpt: 'Puskesmas Pembantu Desa Banjarejo menawarkan pemeriksaan tekanan darah, diabetes, dan kolesterol gratis melalui kemitraan pemerintah provinsi Jawa Timur.',
-    date: '8 Agustus 2026',
-    author: 'Dr. Indah Pertiwi',
-    image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=600&h=380&fit=crop&auto=format',
+    title: 'BUMDes Banjarejo Mandiri Cetak Omzet Rp 95 Juta di Semester Pertama',
+    excerpt: 'Badan Usaha Milik Desa Banjarejo mencatat pertumbuhan omzet 28% dibanding periode yang sama tahun lalu.',
+    date: '08 Agustus 2026',
+    author: 'Joko Purnomo',
+    image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600&h=380&fit=crop&auto=format',
   },
 ]
 
@@ -128,6 +128,30 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [currentPage, setCurrentPage] = useState<Page>('home')
+  const [homeNews, setHomeNews] = useState<typeof fallbackHomeNews>(fallbackHomeNews)
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/news')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const mapped = json.data.slice(0, 3).map((item: any) => ({
+            id: item.id,
+            category: item.category || 'Pemerintahan',
+            categoryColor: item.category === 'Ekonomi' ? 'bg-navy-700 text-white' : item.category === 'Pertanian' ? 'bg-emerald-dark text-white' : 'bg-navy text-white',
+            title: item.title,
+            excerpt: item.excerpt,
+            date: item.date || 'Terbaru',
+            author: item.author || 'Pemerintah Desa',
+            image: item.image || 'https://images.unsplash.com/photo-1577495508048-b635879837f1?w=600&h=380&fit=crop&auto=format',
+          }))
+          setHomeNews(mapped)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -441,7 +465,7 @@ export default function App() {
 
             {/* Cards grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-              {news.map((article) => (
+              {homeNews.map((article) => (
                 <article
                   key={article.id}
                   className="group flex flex-col rounded-xl overflow-hidden border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer"
