@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface OrgMember {
-  id?: number
+  id?: number | string
   name: string
   position: string
   detail?: string
@@ -11,13 +11,7 @@ interface OrgMember {
   image?: string
 }
 
-interface ApiPerangkat {
-  id: number
-  nama: string
-  jabatan: string
-  foto_url: string | null
-  urutan: number
-}
+const API_BASE = 'http://localhost:5000'
 
 // ── Default Fallback Data ──────────────────────────────────────────────────
 
@@ -169,31 +163,90 @@ function TierLabel({ label }: { label: string }) {
 export default function AboutPage() {
   const [perangkatList, setPerangkatList] = useState<OrgMember[]>([])
   const [loading, setLoading] = useState(true)
+  const [profilData, setProfilData] = useState<{
+    sejarah?: string
+    visi?: string
+    misi_1?: string
+    misi_2?: string
+    misi_3?: string
+    misi_4?: string
+  } | null>(null)
 
   useEffect(() => {
     let isMounted = true
     setLoading(true)
 
-    fetch('/api/perangkat')
-      .then((res) => res.json())
+    // 1. Sync Langsung dari Editan Web Admin (LocalStorage)
+    try {
+      const savedNodes = localStorage.getItem('banjarejo_struktur_nodes')
+      if (savedNodes) {
+        const parsed = JSON.parse(savedNodes)
+        const mappedFromLocal: OrgMember[] = Object.values(parsed).map((node: any) => ({
+          id: node.id,
+          name: node.nama,
+          position: node.jabatan,
+          detail: node.sub || undefined,
+          initials: node.inisial || getInitials(node.nama),
+        }))
+        if (isMounted && mappedFromLocal.length > 0) {
+          setPerangkatList(mappedFromLocal)
+        }
+      }
+
+      const savedProfil = localStorage.getItem('banjarejo_profil_text')
+      if (savedProfil) {
+        const parsedProfil = JSON.parse(savedProfil)
+        setProfilData({
+          sejarah: parsedProfil.sejarah,
+          visi: parsedProfil.visi,
+          misi_1: parsedProfil.misi1,
+          misi_2: parsedProfil.misi2,
+          misi_3: parsedProfil.misi3,
+          misi_4: parsedProfil.misi4,
+        })
+      }
+    } catch (e) {
+      console.warn('LocalStorage sync error:', e)
+    }
+
+    // 2. Fetch Data dari Database Backend MySQL (jika tabel MySQL sudah ada)
+    fetch(`${API_BASE}/api/perangkat`)
+      .then((res) => {
+        if (!res.ok) throw new Error('HTTP Status ' + res.status)
+        return res.json()
+      })
       .then((data) => {
-        if (isMounted && data.success && Array.isArray(data.data) && data.data.length > 0) {
-          const mapped: OrgMember[] = data.data.map((item: ApiPerangkat) => ({
-            id: item.id,
-            name: item.nama,
+        const rawList = Array.isArray(data) ? data : (data.data || [])
+        if (isMounted && Array.isArray(rawList) && rawList.length > 0) {
+          const mapped: OrgMember[] = rawList.map((item: any) => ({
+            id: item.id_perangkat || item.id || item.kode_key,
+            name: item.nama_lengkap || item.nama,
             position: item.jabatan,
-            initials: getInitials(item.nama),
+            detail: item.sub_keterangan || undefined,
+            initials: item.inisial || getInitials(item.nama_lengkap || item.nama),
             image: item.foto_url || undefined,
           }))
           setPerangkatList(mapped)
         }
       })
       .catch((err) => {
-        console.warn('Backend /api/perangkat tidak terhubung, menggunakan data default:', err)
+        console.warn('MySQL Backend /api/perangkat belum siap:', err)
       })
       .finally(() => {
         if (isMounted) setLoading(false)
       })
+
+    fetch(`${API_BASE}/api/profil`)
+      .then((res) => {
+        if (!res.ok) throw new Error('HTTP Status ' + res.status)
+        return res.json()
+      })
+      .then((data) => {
+        if (isMounted && data && data.sejarah) {
+          setProfilData(data)
+        }
+      })
+      .catch(() => { })
 
     return () => {
       isMounted = false
@@ -219,7 +272,7 @@ export default function AboutPage() {
 
   const kepalaDesa = findMember(['kepala desa', 'kades'], defaultKepalaDesa)
   const kasiPelayanan = findMember(['pelayanan'], defaultKasiPelayanan)
-  const kasiPemerintahan = findMember(['kasi pemerintahan'], defaultKasiPemerintahan)
+  const kasiPemerintahan = findMember(['pemerintahan'], defaultKasiPemerintahan)
   const stafPemerintahan = findMember(['staf'], defaultStafPemerintahan)
   const kasiKesejahteraan = findMember(['kesejahteraan'], defaultKasiKesejahteraan)
   const sekretarisDesa = findMember(['sekretaris'], defaultSekretarisDesa)
@@ -266,7 +319,7 @@ export default function AboutPage() {
 
         {/* Desktop Visual Tree / Mobile Grid Layout */}
         <div className="bg-white p-6 sm:p-10 rounded-2xl border border-slate-200 shadow-sm mb-12 relative">
-          
+
           {loading && (
             <div className="absolute top-4 right-4 flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full animate-pulse">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
@@ -288,7 +341,7 @@ export default function AboutPage() {
             </div>
           </div>
 
-          {/* Connecting Line Down from Kepala Desa (Visible on md+) */}
+          {/* Connecting Line Down from Kepala Desa */}
           <div className="hidden md:block w-0.5 h-8 bg-slate-300 mx-auto -mt-6 mb-2" />
 
           {/* Horizontal Connector Line for Kasi vs Sekretaris */}
@@ -298,13 +351,13 @@ export default function AboutPage() {
 
           {/* Tier 2: Kasi Side (Left) and Sekretaris Side (Right) */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start max-w-5xl mx-auto">
-            
+
             {/* LEFT COLUMN: Kasi Group */}
             <div className="flex flex-col gap-6 p-4 rounded-xl bg-slate-50/70 border border-slate-200/60">
               <div className="text-xs font-bold text-slate-500 tracking-wider uppercase text-center border-b border-slate-200 pb-2">
                 Unsur Pelaksana (KASI)
               </div>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Kasi Pelayanan */}
                 <OrgCard member={kasiPelayanan} size="sm" accentColor="bg-emerald-700" />
@@ -312,10 +365,10 @@ export default function AboutPage() {
                 {/* Kasi Pemerintahan + Staf */}
                 <div className="flex flex-col items-center gap-3">
                   <OrgCard member={kasiPemerintahan} size="sm" accentColor="bg-emerald-700" />
-                  
+
                   {/* Connector Line to Staf */}
                   <div className="w-0.5 h-3 bg-slate-300 -my-1" />
-                  
+
                   {/* Staf Muji */}
                   <OrgCard member={stafPemerintahan} size="sm" accentColor="bg-emerald-800" />
                 </div>
@@ -364,21 +417,33 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
             <h2 className="text-lg font-bold mb-3 text-slate-800" style={{ fontFamily: 'var(--font-display)' }}>
-              Profil Singkat Desa
+              Sejarah & Profil Singkat Desa
             </h2>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Desa Banjarejo adalah desa di wilayah pemerintahan daerah yang berkomitmen pada pelayanan publik transparan dan akuntabel. Struktur organisasi ini bertugas menjalankan fungsi pelayanan, kesejahteraan, pembangunan, serta tata kelola pemerintahan desa.
+            <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+              {profilData?.sejarah ||
+                'Desa Banjarejo bermula dari pemukiman legendaris di lereng Gunung Lawu yang subur dan kaya akan sumber daya alam. Kata "Banjarejo" berasal dari paduan kata "Banjar" yang bermakna kelompok pemukiman dan "Rejo" yang bermakna ramai serta makmur.'}
             </p>
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
             <h2 className="text-lg font-bold mb-3 text-slate-800" style={{ fontFamily: 'var(--font-display)' }}>
-              Tugas & Fungsi Perangkat
+              Visi & Misi Desa
             </h2>
-            <ul className="text-sm text-slate-600 space-y-2 list-disc pl-5">
-              <li><strong>Sekretaris Desa & Kaur:</strong> Menyelenggarakan administrasi, keuangan, tata usaha, dan perencanaan desa.</li>
-              <li><strong>Kasi:</strong> Pelaksanaan teknis pelayanan, pemerintahan, dan kesejahteraan masyarakat.</li>
-              <li><strong>Kamituwo:</strong> Penyelenggaraan ketenteraman, ketertiban, dan pembinaan di wilayah dusun/dukuh.</li>
+            <p className="text-sm font-semibold text-emerald-800 mb-2">
+              <strong>Visi:</strong> {profilData?.visi || 'Terwujudnya Desa Banjarejo yang Mandiri, Sejahtera, Berdaya Saing, dan Berkelanjutan.'}
+            </p>
+            <ul className="text-sm text-slate-600 space-y-1.5 list-disc pl-5">
+              {profilData?.misi_1 && <li>{profilData.misi_1}</li>}
+              {profilData?.misi_2 && <li>{profilData.misi_2}</li>}
+              {profilData?.misi_3 && <li>{profilData.misi_3}</li>}
+              {profilData?.misi_4 && <li>{profilData.misi_4}</li>}
+              {!profilData && (
+                <>
+                  <li>Meningkatkan tata kelola pemerintahan desa yang transparan dan berbasis digital.</li>
+                  <li>Mengembangkan ekonomi warga melalui UMKM dan BUMDes.</li>
+                  <li>Memperkuat infrastruktur dan pengawasan sarana umum.</li>
+                </>
+              )}
             </ul>
           </div>
         </div>
@@ -391,4 +456,3 @@ export default function AboutPage() {
     </div>
   )
 }
-
