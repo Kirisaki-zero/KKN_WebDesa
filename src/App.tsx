@@ -4,9 +4,10 @@ import NewsPage from '@/pages/NewsPage'
 import HistoryPage from '@/pages/HistoryPage'
 import ServicesPage from '@/pages/ServicesPage'
 import UmkmPage from '@/pages/UmkmPage'
+import ContactPage from '@/pages/ContactPage'
 import AdminPage from '@/pages/AdminPage'
 
-type Page = 'home' | 'about' | 'news' | 'history' | 'services' | 'umkm' | 'admin'
+type Page = 'home' | 'about' | 'news' | 'history' | 'services' | 'umkm' | 'contact' | 'admin'
 
 // ── Icons ────────────────────────────────────────────────────────────────────
 
@@ -119,7 +120,7 @@ const navLinks = [
   { label: 'News', href: '#', page: 'news' as Page, anchor: null },
   { label: 'History', href: '#', page: 'history' as Page, anchor: null },
   { label: 'UMKM', href: '#', page: 'umkm' as Page, anchor: null },
-  { label: 'Contact', href: '#contact', page: 'home' as Page, anchor: 'contact' },
+  { label: 'Contact', href: '#', page: 'contact' as Page, anchor: null },
 ]
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -161,7 +162,7 @@ export default function App() {
 
   const navigate = useCallback((page: Page | null, anchor: string | null) => {
     setMenuOpen(false)
-    if (page === 'about' || page === 'news' || page === 'history' || page === 'services' || page === 'umkm') {
+    if (page === 'about' || page === 'news' || page === 'history' || page === 'services' || page === 'umkm' || page === 'contact') {
       setCurrentPage(page)
       window.scrollTo({ top: 0, behavior: 'smooth' })
       return
@@ -295,6 +296,9 @@ export default function App() {
 
       {/* ── History Page ────────────────────────────────────────────────────── */}
       {currentPage === 'history' && <HistoryPage />}
+
+      {/* ── Contact Page ────────────────────────────────────────────────────── */}
+      {currentPage === 'contact' && <ContactPage />}
 
       {/* ── Homepage ────────────────────────────────────────────────────────── */}
       {currentPage === 'home' && <>

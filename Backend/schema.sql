@@ -231,3 +231,18 @@ CREATE TABLE `admin_users` (
 INSERT INTO `admin_users` (`username`, `password_hash`, `nama_lengkap`) VALUES
 ('admin', '$2b$10$AOFIRUJ..tlzUAYFozly5uiJmTOPMnDF4z9mto6uWEpQ/V4Nqx4xm', 'Administrator Desa');
 
+
+
+-- Table: aspirasi_warga
+CREATE TABLE IF NOT EXISTS `aspirasi_warga` (
+    `id_aspirasi` INT NOT NULL AUTO_INCREMENT,
+    `kategori` VARCHAR(50) NOT NULL DEFAULT 'Aspirasi',
+    `nama_warga` VARCHAR(100) NOT NULL,
+    `kontak_hp` VARCHAR(25) NOT NULL,
+    `dukuh` VARCHAR(50) DEFAULT 'Ngasem',
+    `subjek` VARCHAR(150) NOT NULL,
+    `pesan` TEXT NOT NULL,
+    `status` ENUM('BARU', 'DIBACA', 'DITINDAKLANJUTI') DEFAULT 'BARU',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id_aspirasi`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
