@@ -33,7 +33,7 @@ export default function AdminPage() {
   const fetchRequests = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/services/admin/list');
+      const res = await fetch('https://desabanjarejo.my.id/api/services/admin/list');
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
         setRequests(json.data);
@@ -94,7 +94,7 @@ export default function AdminPage() {
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const res = await fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(searchQuery)}`);
+        const res = await fetch(`https://desabanjarejo.my.id/api/search?q=${encodeURIComponent(searchQuery)}`);
         const json = await res.json();
         if (json.success) {
           setSearchResults(json.results);
@@ -113,7 +113,7 @@ export default function AdminPage() {
   const handleUpdateStatus = async (id: number, newStatus: 'PENDING' | 'PROSES' | 'SELESAI' | 'DITOLAK') => {
     setStatusUpdating(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/services/admin/${id}/status`, {
+      const res = await fetch(`https://desabanjarejo.my.id/api/services/admin/${id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -394,7 +394,7 @@ export default function AdminPage() {
             {/* Action Buttons */}
             <div className="flex gap-3 pt-3 border-t">
               <a
-                href={`http://localhost:5000/api/services/pdf/${selectedRequest.id_surat}`}
+                href={`https://desabanjarejo.my.id/api/services/pdf/${selectedRequest.id_surat}`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-center bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-md flex items-center justify-center gap-2"

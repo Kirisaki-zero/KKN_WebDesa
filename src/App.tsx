@@ -132,7 +132,7 @@ export default function App() {
   const [homeNews, setHomeNews] = useState<typeof fallbackHomeNews>(fallbackHomeNews)
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/news')
+    fetch('https://desabanjarejo.my.id/api/news')
       .then((res) => res.json())
       .then((json) => {
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {

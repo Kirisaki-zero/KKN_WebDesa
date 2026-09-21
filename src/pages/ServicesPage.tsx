@@ -185,7 +185,7 @@ export default function ServicesPage() {
 
     setIsSubmitting(true)
     try {
-      const res = await fetch('http://localhost:5000/api/services/apply', {
+      const res = await fetch('https://desabanjarejo.my.id/api/services/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -223,7 +223,7 @@ export default function ServicesPage() {
     setTrackResult(null)
 
     try {
-      const res = await fetch(`http://localhost:5000/api/services/track/${encodeURIComponent(trackInputResi.trim())}`)
+      const res = await fetch(`https://desabanjarejo.my.id/api/services/track/${encodeURIComponent(trackInputResi.trim())}`)
       const json = await res.json()
       if (json.success && json.data) {
         setTrackResult(json.data)
@@ -682,7 +682,7 @@ export default function ServicesPage() {
                 {trackResult.status === 'SELESAI' && (
                   <div className="pt-2 border-t border-gray-200">
                     <a
-                      href={`http://localhost:5000/api/services/pdf/${trackResult.id_surat || 1}`}
+                      href={`https://desabanjarejo.my.id/api/services/pdf/${trackResult.id_surat || 1}`}
                       target="_blank"
                       rel="noreferrer"
                       className="w-full py-3 px-4 rounded-xl text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition-all text-center block shadow-md"

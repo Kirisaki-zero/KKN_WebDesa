@@ -185,8 +185,8 @@ export default function NewsPage() {
       setIsLoading(true)
       try {
         const url = activeCategory === 'Semua' 
-          ? 'http://localhost:5000/api/news' 
-          : `http://localhost:5000/api/news?category=${encodeURIComponent(activeCategory)}`
+          ? 'https://desabanjarejo.my.id/api/news' 
+          : `https://desabanjarejo.my.id/api/news?category=${encodeURIComponent(activeCategory)}`
         const res = await fetch(url)
         const json = await res.json()
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {

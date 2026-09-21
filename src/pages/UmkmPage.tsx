@@ -250,7 +250,7 @@ function RegistrationModal({ onClose }: { onClose: () => void }) {
     e.preventDefault();
     if (validate()) {
       try {
-        await fetch('http://localhost:5000/api/bumdes/register', {
+        await fetch('https://desabanjarejo.my.id/api/bumdes/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -600,7 +600,7 @@ export default function UmkmPage() {
   useEffect(() => {
     const fetchUmkm = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/umkm')
+        const res = await fetch('https://desabanjarejo.my.id/api/umkm')
         const json = await res.json()
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
           setBizList(json.data)
@@ -736,7 +736,7 @@ export default function UmkmPage() {
                 </p>
               </div>
               <a
-                href="http://localhost:5174"
+                href="https://desabanjarejo.my.id"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-shrink-0 inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white hover:brightness-110 shadow-md transition-all cursor-pointer"
