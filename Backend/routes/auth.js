@@ -7,7 +7,7 @@ const router = express.Router();
 
 /**
  * @route   POST /api/auth/login
- * @desc    Login admin dan menghasilkan JWT token
+ * @desc    Login admin dan menghasilkan JWT token resmi
  */
 router.post('/login', async (req, res) => {
   try {
@@ -16,55 +16,63 @@ router.post('/login', async (req, res) => {
     if (!username || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Username dan password wajib diisi.',
+        message: 'Username dan kata sandi wajib diisi.',
       });
     }
 
-    // Cari admin berdasarkan username
-    const [rows] = await pool.query('SELECT * FROM admin_users WHERE username = ?', [username]);
+    const [rows] = await pool.query(
+      'SELECT id, username, password_hash, nama_lengkap, role, jabatan FROM admin_users WHERE username = ?', 
+      [username.trim()]
+    );
 
     if (rows.length === 0) {
       return res.status(401).json({
         success: false,
-        message: 'Username atau password salah.',
+        message: 'Username atau kata sandi tidak sesuai.',
       });
     }
 
     const admin = rows[0];
 
-    // Bandingkan password
     const isMatch = await bcrypt.compare(password, admin.password_hash);
-
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Username atau password salah.',
+        message: 'Username atau kata sandi tidak sesuai.',
       });
     }
 
-    // Buat token JWT
+    const role = admin.role || (admin.username === 'admin' ? 'superadmin' : admin.username === 'sekdes' ? 'sekdes' : 'petugas');
+    const jabatan = admin.jabatan || 'Perangkat Desa';
+    const nama = admin.nama_lengkap || 'Administrator';
+    const initials = nama.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
     const token = generateToken({
       id: admin.id,
       username: admin.username,
-      namaLengkap: admin.nama_lengkap,
+      namaLengkap: nama,
+      role,
+      jabatan,
     });
 
     return res.json({
       success: true,
       message: 'Login berhasil.',
       token,
-      admin: {
+      user: {
         id: admin.id,
         username: admin.username,
-        namaLengkap: admin.nama_lengkap,
+        nama,
+        role,
+        jabatan,
+        initials,
       },
     });
   } catch (error) {
     console.error('Error during admin login:', error);
     return res.status(500).json({
       success: false,
-      message: 'Terjadi kesalahan pada server saat login.',
-      error: error.message,
+      message: 'Terjadi kesalahan sistem saat memproses login.',
     });
   }
 });
@@ -76,7 +84,7 @@ router.post('/login', async (req, res) => {
 router.get('/me', verifyTokenMiddleware, async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT id, username, nama_lengkap, created_at FROM admin_users WHERE id = ?',
+      'SELECT id, username, nama_lengkap, role, jabatan, created_at FROM admin_users WHERE id = ?',
       [req.user.id]
     );
 
@@ -87,23 +95,33 @@ router.get('/me', verifyTokenMiddleware, async (req, res) => {
       });
     }
 
+    const admin = rows[0];
+    const nama = admin.nama_lengkap || 'Administrator';
+    const initials = nama.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
     return res.json({
       success: true,
-      admin: rows[0],
+      user: {
+        id: admin.id,
+        username: admin.username,
+        nama,
+        role: admin.role,
+        jabatan: admin.jabatan,
+        initials,
+      },
     });
   } catch (error) {
     console.error('Error fetching admin info:', error);
     return res.status(500).json({
       success: false,
       message: 'Gagal mengambil informasi profil admin.',
-      error: error.message,
     });
   }
 });
 
 /**
  * @route   PUT /api/auth/change-password
- * @desc    Ubah password admin
+ * @desc    Ubah password admin yang sedang aktif
  */
 router.put('/change-password', verifyTokenMiddleware, async (req, res) => {
   try {
@@ -153,7 +171,6 @@ router.put('/change-password', verifyTokenMiddleware, async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Gagal memperbarui password.',
-      error: error.message,
     });
   }
 });

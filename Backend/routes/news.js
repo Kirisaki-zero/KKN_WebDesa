@@ -1,5 +1,6 @@
 import express from 'express';
 import pool from '../config/db.js';
+import { verifyTokenMiddleware } from '../config/jwt.js';
 
 const router = express.Router();
 
@@ -147,7 +148,7 @@ router.get('/:id', async (req, res) => {
  * @desc    Create new article (Admin only)
  */
 
-router.post('/', async (req, res) => {
+router.post('/', verifyTokenMiddleware, async (req, res) => {
   try {
     const title = req.body.title || req.body.judul;
     const category = req.body.category || req.body.kategori || 'Pemerintahan';
@@ -176,7 +177,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', verifyTokenMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const title = req.body.title || req.body.judul;
@@ -204,7 +205,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verifyTokenMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     try {

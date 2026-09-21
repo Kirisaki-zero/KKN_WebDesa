@@ -222,14 +222,21 @@ CREATE TABLE `admin_users` (
   `id`            INT NOT NULL AUTO_INCREMENT,
   `username`      VARCHAR(50) NOT NULL UNIQUE,
   `password_hash` VARCHAR(255) NOT NULL,
-  `nama_lengkap`  VARCHAR(100),
+  `nama_lengkap`  VARCHAR(100) NOT NULL,
+  `role`          ENUM('superadmin', 'sekdes', 'petugas') NOT NULL DEFAULT 'petugas',
+  `jabatan`       VARCHAR(100) NOT NULL DEFAULT 'Perangkat Desa',
   `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Seed Admin User Default (password default: admin123 -> $2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vj2v8q4C4S)
-INSERT INTO `admin_users` (`username`, `password_hash`, `nama_lengkap`) VALUES
-('admin', '$2b$10$AOFIRUJ..tlzUAYFozly5uiJmTOPMnDF4z9mto6uWEpQ/V4Nqx4xm', 'Administrator Desa');
+-- Seed Akun Admin Terverifikasi (bcrypt cost 10)
+-- 1. admin     : admin123     (Super Admin / Kepala Desa)
+-- 2. sekdes    : sekdes123    (Sekretaris Desa)
+-- 3. pelayanan : pelayanan123 (Kasi Pelayanan)
+INSERT INTO `admin_users` (`username`, `password_hash`, `nama_lengkap`, `role`, `jabatan`) VALUES
+('admin', '$2b$10$9iE8DlhRLdcepKnP0l25XeU1/eLhoXGJk4lKrPGgBQWawv8onECge', 'Sudarmanto, S.Sos.', 'superadmin', 'Kepala Desa'),
+('sekdes', '$2b$10$QJIgEw2YIOoecc1PabZ8hukkmoHN30NCHy6gHAbzQEkY94FHJjJtC', 'Evy Nurdiani', 'sekdes', 'Sekretaris Desa'),
+('pelayanan', '$2b$10$taqEaTGIkc555UoaGE.bVOxT3cy4S1xcz56.eH0xtAHUlzXh6cUJu', 'Siti Rahmawati, A.Md.', 'petugas', 'Kasi Pelayanan');
 
 
 

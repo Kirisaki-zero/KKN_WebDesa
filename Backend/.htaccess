@@ -1,0 +1,18 @@
+# Keamanan Server cPanel / Apache
+# 1. Lindungi file sensitif
+<FilesMatch "^(\..*|package.*\.json|.*\.env.*|.*\.sql)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# 2. Nonaktifkan Directory Browsing
+Options -Indexes
+
+# 3. Blokir eksekusi script PHP/CGI di dalam folder uploads
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<FilesMatch "\.(php|php3|php4|php5|phtml|pl|py|cgi|sh|bash)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

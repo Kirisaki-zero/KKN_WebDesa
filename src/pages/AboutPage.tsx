@@ -187,6 +187,7 @@ export default function AboutPage() {
           position: node.jabatan,
           detail: node.sub || undefined,
           initials: node.inisial || getInitials(node.nama),
+          image: node.foto_url || node.foto || undefined,
         }))
         if (isMounted && mappedFromLocal.length > 0) {
           setPerangkatList(mappedFromLocal)

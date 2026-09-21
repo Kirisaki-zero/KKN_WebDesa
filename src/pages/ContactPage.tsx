@@ -251,10 +251,10 @@ export default function ContactPage() {
             </div>
             <h2 className="text-base font-bold text-slate-900 mb-1">Kantor Balai Desa</h2>
             <p className="text-xs text-slate-600 leading-relaxed mb-3">
-              Jl. Raya Banjarejo No. 01, Kec. Ngariboyo, Kab. Magetan, Jawa Timur 63351
+              Jl. Raya Banjarejo No. 01, Kec. Panekan, Kab. Magetan, Jawa Timur 63351
             </p>
             <a
-              href="https://maps.google.com/?q=Desa+Banjarejo+Ngariboyo+Magetan"
+              href="https://maps.google.com/?q=Desa+Banjarejo+Panekan+Magetan"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition-colors"
@@ -569,11 +569,11 @@ export default function ContactPage() {
                 Peta Balai Desa Banjarejo
               </h2>
               <p className="text-xs text-slate-500 mt-1">
-                Kecamatan Ngariboyo, Kabupaten Magetan, Jawa Timur
+                Kecamatan Panekan, Kabupaten Magetan, Jawa Timur
               </p>
             </div>
             <a
-              href="https://maps.google.com/?q=Desa+Banjarejo+Ngariboyo+Magetan"
+              href="https://maps.google.com/?q=Desa+Banjarejo+Panekan+Magetan"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-colors"
@@ -586,7 +586,7 @@ export default function ContactPage() {
           <div className="w-full h-80 sm:h-96 rounded-2xl overflow-hidden border border-slate-200 shadow-inner relative">
             <iframe
               title="Peta Lokasi Kantor Desa Banjarejo"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15818.15671153723!2d111.3501234!3d-7.6534567!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e799787e91d84b5%3A0x6b801a2f4cbfb9d!2sBanjarejo%2C%20Ngariboyo%2C%20Magetan%20Regency%2C%20East%20Java!5e0!3m2!1sen!2sid!4v1700000000000!5m2!1sen!2sid"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15820.28723223075!2d111.353389!3d-7.607412!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e79963bbf4479e5%3A0x5027a76e356cfc0!2sBanjarejo%2C%20Kec.%20Panekan%2C%20Kabupaten%20Magetan%2C%20Jawa%20Timur!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid"
               width="100%"
               height="100%"
               style={{ border: 0 }}

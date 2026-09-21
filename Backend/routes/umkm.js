@@ -1,5 +1,6 @@
 import express from 'express';
 import pool from '../config/db.js';
+import { verifyTokenMiddleware } from '../config/jwt.js';
 
 const router = express.Router();
 
@@ -133,7 +134,7 @@ router.get('/', async (req, res) => {
  * @desc    Add new UMKM business (Admin only)
  */
 
-router.post('/', async (req, res) => {
+router.post('/', verifyTokenMiddleware, async (req, res) => {
   try {
     const name = req.body.nama_usaha || req.body.name;
     const category = req.body.kategori || req.body.category || 'Produk Olahan';
@@ -161,7 +162,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', verifyTokenMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const name = req.body.nama_usaha || req.body.name;
@@ -191,7 +192,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verifyTokenMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     try {

@@ -1,5 +1,6 @@
 import express from 'express';
 import pool from '../config/db.js';
+import { verifyTokenMiddleware } from '../config/jwt.js';
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ const FALLBACK_WARGA = [
  * @route   GET /api/warga
  * @desc    Get all citizens (with optional search by NIK or name)
  */
-router.get('/', async (req, res) => {
+router.get('/', verifyTokenMiddleware, async (req, res) => {
   try {
     const { q, dukuh, page = 1, limit = 50 } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
@@ -68,7 +69,7 @@ router.get('/', async (req, res) => {
  * @route   GET /api/warga/:nik
  * @desc    Get single citizen by NIK
  */
-router.get('/:nik', async (req, res) => {
+router.get('/:nik', verifyTokenMiddleware, async (req, res) => {
   try {
     const { nik } = req.params;
     try {
@@ -89,7 +90,7 @@ router.get('/:nik', async (req, res) => {
  * @route   POST /api/warga
  * @desc    Add new citizen
  */
-router.post('/', async (req, res) => {
+router.post('/', verifyTokenMiddleware, async (req, res) => {
   try {
     const { nik, nama_lengkap, dukuh, jenis_kelamin, alamat_detail } = req.body;
     if (!nik || !nama_lengkap || !dukuh || !jenis_kelamin) {
@@ -118,7 +119,7 @@ router.post('/', async (req, res) => {
  * @route   PUT /api/warga/:nik
  * @desc    Update citizen data
  */
-router.put('/:nik', async (req, res) => {
+router.put('/:nik', verifyTokenMiddleware, async (req, res) => {
   try {
     const { nik } = req.params;
     const { nama_lengkap, dukuh, jenis_kelamin, alamat_detail } = req.body;
@@ -142,7 +143,7 @@ router.put('/:nik', async (req, res) => {
  * @route   DELETE /api/warga/:nik
  * @desc    Delete citizen record
  */
-router.delete('/:nik', async (req, res) => {
+router.delete('/:nik', verifyTokenMiddleware, async (req, res) => {
   try {
     const { nik } = req.params;
     try {

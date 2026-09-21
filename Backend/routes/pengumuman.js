@@ -1,5 +1,6 @@
 import express from 'express';
 import pool from '../config/db.js';
+import { verifyTokenMiddleware } from '../config/jwt.js';
 
 const router = express.Router();
 
@@ -98,7 +99,7 @@ router.get('/:id', async (req, res) => {
  * @route   POST /api/pengumuman
  * @desc    Create new announcement
  */
-router.post('/', async (req, res) => {
+router.post('/', verifyTokenMiddleware, async (req, res) => {
   try {
     const { judul, isi, kategori, prioritas, tanggal_mulai, tanggal_berakhir, penulis } = req.body;
     if (!judul || !isi) return res.status(400).json({ success: false, message: 'Judul dan Isi pengumuman wajib diisi.' });
@@ -123,7 +124,7 @@ router.post('/', async (req, res) => {
  * @route   PUT /api/pengumuman/:id
  * @desc    Update announcement
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', verifyTokenMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const { judul, isi, kategori, prioritas, tanggal_mulai, tanggal_berakhir, status } = req.body;
@@ -143,7 +144,7 @@ router.put('/:id', async (req, res) => {
  * @route   DELETE /api/pengumuman/:id
  * @desc    Delete announcement
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verifyTokenMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     try {

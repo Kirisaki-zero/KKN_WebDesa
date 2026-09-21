@@ -1,6 +1,7 @@
 import express from 'express';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import pool from '../config/db.js';
+import { verifyTokenMiddleware } from '../config/jwt.js';
 
 const router = express.Router();
 
@@ -8,7 +9,7 @@ const router = express.Router();
  * @route   GET /api/services
  * @desc    Get all letter requests (compatible with root route)
  */
-router.get('/', async (req, res) => {
+router.get('/', verifyTokenMiddleware, async (req, res) => {
   try {
     const { status, q } = req.query;
     try {
@@ -67,7 +68,7 @@ router.get('/', async (req, res) => {
  * @route   PUT /api/services/:id
  * @desc    Update letter request status / details
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', verifyTokenMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const { status, keterangan, filePdfUrl } = req.body;
@@ -95,7 +96,7 @@ router.put('/:id', async (req, res) => {
  * @route   DELETE /api/services/:id
  * @desc    Delete letter request
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verifyTokenMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     try {
@@ -503,7 +504,7 @@ router.get('/admin/dashboard-stats', async (req, res) => {
  * @route   PUT /api/services/admin/:id/status
  * @desc    Approve/Update status of letter request
  */
-router.put('/admin/:id/status', async (req, res) => {
+router.put('/admin/:id/status', verifyTokenMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const { status, filePdfUrl } = req.body;
@@ -545,6 +546,15 @@ router.put('/admin/:id/status', async (req, res) => {
  * @desc    Generate Official Village Letter PDF with Kop Surat Desa Banjarejo
  */
 router.get('/pdf/:id', async (req, res) => {
+  const authHeader = req.headers.authorization;
+  const trackingResi = req.query.resi;
+  // Jika bukan admin dan tidak menyertakan resi pelacakan, tolak akses (Anti-IDOR)
+  if (!authHeader && !trackingResi) {
+    return res.status(403).json({
+      success: false,
+      message: 'Akses ditolak. Nomor resi pelacakan atau otentikasi admin diperlukan untuk mengunduh berkas surat.'
+    });
+  }
   try {
     const { id } = req.params;
 
