@@ -1,9 +1,14 @@
-import express from 'express';
+﻿import express from 'express';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import pool from '../config/db.js';
 import { verifyTokenMiddleware } from '../config/jwt.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * @route   GET /api/services
@@ -543,12 +548,11 @@ router.put('/admin/:id/status', verifyTokenMiddleware, async (req, res) => {
 
 /**
  * @route   GET /api/services/pdf/:id
- * @desc    Generate Official Village Letter PDF with Kop Surat Desa Banjarejo
+ * @desc    Generate Official Village Letter PDF — Layout Kop Surat Resmi Desa Banjarejo
  */
 router.get('/pdf/:id', async (req, res) => {
-  const authHeader = req.headers.authorization;
+  const authHeader  = req.headers.authorization;
   const trackingResi = req.query.resi;
-  // Jika bukan admin dan tidak menyertakan resi pelacakan, tolak akses (Anti-IDOR)
   if (!authHeader && !trackingResi) {
     return res.status(403).json({
       success: false,
@@ -558,19 +562,22 @@ router.get('/pdf/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Default letter data
+    // Default letter data (fallback jika DB offline)
     let letterData = {
+      idSurat:       id,
       nomorPelacakan: `RESI-2026-00${id}`,
-      nama: 'Warga Banjarejo',
-      nik: '3520010000000000',
-      dukuh: 'Ngasem',
-      jenisLayanan: 'SURAT KETERANGAN RESMI',
-      tanggal: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+      nama:          'Warga Banjarejo',
+      nik:           '3520010000000000',
+      dukuh:         'Ngasem',
+      alamat:        'Dukuh Ngasem, Desa Banjarejo, Kecamatan Panekan, Kabupaten Magetan',
+      jenisLayanan:  'SURAT KETERANGAN',
+      tanggal:       new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
     };
 
     try {
       const [rows] = await pool.query(
-        `SELECT s.nomor_pelacakan, s.jenis_layanan, s.tanggal_pengajuan, w.nama_lengkap, w.nik, w.dukuh
+        `SELECT s.id_surat, s.nomor_pelacakan, s.jenis_layanan, s.tanggal_pengajuan,
+                w.nama_lengkap, w.nik, w.dukuh, w.alamat_detail
          FROM layanan_surat s
          JOIN warga w ON s.nik_pemohon = w.nik
          WHERE s.id_surat = ?`,
@@ -578,186 +585,173 @@ router.get('/pdf/:id', async (req, res) => {
       );
       if (rows.length > 0) {
         const row = rows[0];
+        const alamatDetail = row.alamat_detail
+          ? `${row.alamat_detail}, Desa Banjarejo, Kecamatan Panekan, Kabupaten Magetan`
+          : `Dukuh ${row.dukuh}, Desa Banjarejo, Kecamatan Panekan, Kabupaten Magetan`;
         letterData = {
+          idSurat:       row.id_surat,
           nomorPelacakan: row.nomor_pelacakan,
-          nama: row.nama_lengkap,
-          nik: row.nik,
-          dukuh: row.dukuh,
-          jenisLayanan: row.jenis_layanan.replace(/_/g, ' ').toUpperCase(),
-          tanggal: new Date(row.tanggal_pengajuan).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+          nama:          row.nama_lengkap,
+          nik:           row.nik,
+          dukuh:         row.dukuh,
+          alamat:        alamatDetail,
+          jenisLayanan:  row.jenis_layanan.replace(/_/g, ' ').toUpperCase(),
+          tanggal:       new Date(row.tanggal_pengajuan).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
         };
       }
     } catch (dbErr) {
       console.warn('DB PDF fetch fallback:', dbErr.message);
     }
 
-    // Generate PDF using pdf-lib
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([595.28, 841.89]); // A4 Size
+    // Nomor surat resmi berdasarkan jenis layanan
+    const kodeLayananMap = {
+      'IZIN USAHA': '530', 'SURAT KETERANGAN': '474',
+      'AKTA KELAHIRAN': '474', 'SERTIFIKAT TANAH': '590', 'BANTUAN SOSIAL': '460'
+    };
+    const tahunSurat  = new Date().getFullYear();
+    const kodeLayanan = kodeLayananMap[letterData.jenisLayanan] || '474';
+    const nomorSurat  = `${kodeLayanan}/${letterData.idSurat}/403.408.17/${tahunSurat}`;
+
+    // Pekerjaan berdasarkan jenis layanan
+    const pekerjaanMap = { 'IZIN USAHA': 'Wiraswasta' };
+    const pekerjaan    = pekerjaanMap[letterData.jenisLayanan] || '-';
+
+    // Isi surat berdasarkan jenis layanan
+    const bodyLines = letterData.jenisLayanan === 'IZIN USAHA'
+      ? [
+          'Yang bersangkutan tersebut di atas adalah benar-benar warga Desa Banjarejo',
+          'yang menjalankan usaha secara nyata di wilayah Desa Banjarejo, Kecamatan',
+          'Panekan, Kabupaten Magetan, dan layak mendapatkan Surat Keterangan Usaha ini.'
+        ]
+      : [
+          'Yang bersangkutan tersebut di atas adalah benar-benar warga yang berdomisili',
+          'di Desa Banjarejo, Kecamatan Panekan, Kabupaten Magetan dan tercatat dalam',
+          'administrasi kependudukan desa.'
+        ];
+
+    // Generate PDF (A4: 595.28 x 841.89 pt)
+    const pdfDoc  = await PDFDocument.create();
+    const page    = pdfDoc.addPage([595.28, 841.89]);
     const { width, height } = page.getSize();
 
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const fontBold    = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-    // 1. KOP SURAT (Header)
-    page.drawText('PEMERINTAH KABUPATEN MAGETAN', {
-      x: 140,
-      y: height - 60,
-      size: 14,
-      font: fontBold,
-      color: rgb(0.04, 0.1, 0.19)
-    });
-    page.drawText('KECAMATAN PANEKAN', {
-      x: 185,
-      y: height - 78,
-      size: 13,
-      font: fontBold,
-      color: rgb(0.04, 0.1, 0.19)
-    });
-    page.drawText('PEMERINTAH DESA BANJAREJO', {
-      x: 155,
-      y: height - 98,
-      size: 15,
-      font: fontBold,
-      color: rgb(0.02, 0.37, 0.27)
-    });
-    page.drawText('Jl. Raya Banjarejo No. 01, Kecamatan Panekan, Magetan 63362', {
-      x: 130,
-      y: height - 114,
-      size: 9,
-      font: fontRegular,
-      color: rgb(0.4, 0.4, 0.4)
-    });
+    // Helper: cetak teks di tengah halaman secara horizontal
+    const drawCentered = (text, y, size, font, color) => {
+      const tw = font.widthOfTextAtSize(text, size);
+      page.drawText(text, { x: (width - tw) / 2, y, size, font, color });
+    };
 
-    // Double Divider Line
-    page.drawLine({
-      start: { x: 50, y: height - 124 },
-      end: { x: width - 50, y: height - 124 },
-      thickness: 2,
-      color: rgb(0.02, 0.37, 0.27)
-    });
-    page.drawLine({
-      start: { x: 50, y: height - 128 },
-      end: { x: width - 50, y: height - 128 },
-      thickness: 0.5,
-      color: rgb(0.02, 0.37, 0.27)
-    });
+    const darkNavy  = rgb(0.04, 0.10, 0.19);
+    const darkGreen = rgb(0.01, 0.35, 0.22);
+    const grayText  = rgb(0.40, 0.40, 0.40);
+    const black     = rgb(0.10, 0.10, 0.10);
 
-    // 2. JUDUL SURAT
-    const judul = letterData.jenisLayanan;
-    page.drawText(judul, {
-      x: 180,
-      y: height - 165,
-      size: 14,
-      font: fontBold,
-      color: rgb(0.04, 0.1, 0.19)
-    });
-    page.drawText(`Nomor Pelacakan: ${letterData.nomorPelacakan}`, {
-      x: 195,
-      y: height - 180,
-      size: 10,
-      font: fontRegular,
-      color: rgb(0.3, 0.3, 0.3)
-    });
+    // ── 1. LOGO KOP SURAT ──────────────────────────────────────────────────
+    try {
+      const logoPath  = path.join(__dirname, '../public/logo_magetan.png');
+      const logoBytes = fs.readFileSync(logoPath);
+      const logoImg   = await pdfDoc.embedPng(logoBytes);
+      page.drawImage(logoImg, { x: 46, y: height - 128, width: 80, height: 80 });
+    } catch {
+      page.drawEllipse({ cx: 86, cy: height - 88, xScale: 36, yScale: 36, borderColor: darkGreen, borderWidth: 1.5 });
+      page.drawText('LOGO', { x: 70, y: height - 92, size: 9, font: fontBold, color: darkGreen });
+    }
 
-    // 3. ISI SURAT
-    page.drawText('Yang bertanda tangan di bawah ini Kepala Desa Banjarejo, Kecamatan Panekan,', {
-      x: 60,
-      y: height - 230,
-      size: 11,
-      font: fontRegular,
-      color: rgb(0.1, 0.1, 0.1)
-    });
-    page.drawText('Kabupaten Magetan, menerangkan bahwa:', {
-      x: 60,
-      y: height - 248,
-      size: 11,
-      font: fontRegular,
-      color: rgb(0.1, 0.1, 0.1)
-    });
+    // ── 2. KOP SURAT TEKS ──────────────────────────────────────────────────
+    drawCentered('PEMERINTAH KABUPATEN MAGETAN', height - 52,  12, fontBold,    darkNavy);
+    drawCentered('KECAMATAN PANEKAN',            height - 68,  11, fontBold,    darkNavy);
+    drawCentered('DESA BANJAREJO',               height - 88,  17, fontBold,    darkGreen);
+    drawCentered('Jl. Raya Banjarejo No. 01, Kecamatan Panekan, Magetan 63362', height - 107, 9, fontRegular, grayText);
+    drawCentered('e-mail: desabanjarejo20@gmail.com  |  Website: banjarejo.panekan.magetan.go.id', height - 119, 8, fontRegular, grayText);
 
-    // Data Table
-    const startY = height - 280;
-    const labels = [
-      ['Nama Lengkap', `:  ${letterData.nama}`],
-      ['NIK', `:  ${letterData.nik}`],
-      ['Dukuh / Wilayah', `:  ${letterData.dukuh}`],
-      ['Jenis Layanan', `:  ${letterData.jenisLayanan}`],
-      ['Status Verifikasi', `:  SELESAI (Resmi Diproses Portal Desa)`]
+    // Garis pembatas kop (tebal + tipis)
+    page.drawLine({ start: { x: 50, y: height - 131 }, end: { x: width - 50, y: height - 131 }, thickness: 2.5, color: darkGreen });
+    page.drawLine({ start: { x: 50, y: height - 135 }, end: { x: width - 50, y: height - 135 }, thickness: 0.7, color: darkGreen });
+
+    // ── 3. JUDUL SURAT ─────────────────────────────────────────────────────
+    const judulY    = height - 168;
+    const judulText = letterData.jenisLayanan;
+    drawCentered(judulText, judulY, 13, fontBold, darkNavy);
+    const judulW = fontBold.widthOfTextAtSize(judulText, 13);
+    const judulX = (width - judulW) / 2;
+    page.drawLine({ start: { x: judulX, y: judulY - 2 }, end: { x: judulX + judulW, y: judulY - 2 }, thickness: 0.8, color: darkNavy });
+
+    drawCentered(`Nomor : ${nomorSurat}`, height - 185, 11, fontRegular, black);
+
+    // ── 4. YANG BERTANDA TANGAN DI BAWAH INI ──────────────────────────────
+    const lc = 80;   // label column x
+    const cc = 210;  // titik dua x
+    const vc = 222;  // value column x
+
+    page.drawText('Yang bertanda tangan di bawah ini :', { x: 60, y: height - 215, size: 11, font: fontRegular, color: black });
+
+    const ttdRows = [
+      ['Nama',    'JANTI'],
+      ['NIP',     '-'],
+      ['Jabatan', 'Kepala Desa Banjarejo, Kecamatan Panekan, Kabupaten Magetan'],
     ];
-
-    labels.forEach(([lbl, val], idx) => {
-      page.drawText(lbl, { x: 80, y: startY - (idx * 24), size: 11, font: fontBold, color: rgb(0.2, 0.2, 0.2) });
-      page.drawText(val, { x: 200, y: startY - (idx * 24), size: 11, font: fontRegular, color: rgb(0.1, 0.1, 0.1) });
+    ttdRows.forEach(([lbl, val], i) => {
+      const ry = height - 234 - (i * 20);
+      page.drawText(lbl, { x: lc, y: ry, size: 11, font: fontRegular, color: black });
+      page.drawText(':', { x: cc, y: ry, size: 11, font: fontRegular, color: black });
+      page.drawText(val, { x: vc, y: ry, size: 11, font: fontRegular, color: black });
     });
 
-    page.drawText('Demikian Surat Keterangan ini dibuat dengan sebenarnya untuk dipergunakan', {
-      x: 60,
-      y: startY - 150,
-      size: 11,
-      font: fontRegular,
-      color: rgb(0.1, 0.1, 0.1)
-    });
-    page.drawText('sebagaimana mestinya.', {
-      x: 60,
-      y: startY - 168,
-      size: 11,
-      font: fontRegular,
-      color: rgb(0.1, 0.1, 0.1)
+    // ── 5. DENGAN INI MENERANGKAN BAHWA ───────────────────────────────────
+    page.drawText('Dengan ini menerangkan bahwa :', { x: 60, y: height - 306, size: 11, font: fontRegular, color: black });
+
+    const wargaRows = [
+      ['Nama',             letterData.nama],
+      ['NIK',              letterData.nik],
+      ['Tempat/Tgl lahir', '-'],
+      ['Pekerjaan',        pekerjaan],
+      ['Alamat',           letterData.alamat],
+    ];
+    wargaRows.forEach(([lbl, val], i) => {
+      const ry = height - 324 - (i * 20);
+      page.drawText(lbl, { x: lc, y: ry, size: 11, font: fontRegular, color: black });
+      page.drawText(':', { x: cc, y: ry, size: 11, font: fontRegular, color: black });
+      if (val.length > 52) {
+        page.drawText(val.substring(0, 52), { x: vc, y: ry,      size: 11, font: fontRegular, color: black });
+        page.drawText(val.substring(52),    { x: vc, y: ry - 14, size: 11, font: fontRegular, color: black });
+      } else {
+        page.drawText(val, { x: vc, y: ry, size: 11, font: fontRegular, color: black });
+      }
     });
 
-    // 4. TANDA TANGAN (Footer Signature Block)
-    const sigY = startY - 240;
-    page.drawText(`Banjarejo, ${letterData.tanggal}`, {
-      x: 350,
-      y: sigY,
-      size: 11,
-      font: fontRegular,
-      color: rgb(0.1, 0.1, 0.1)
-    });
-    page.drawText('Kepala Desa Banjarejo', {
-      x: 350,
-      y: sigY - 18,
-      size: 11,
-      font: fontBold,
-      color: rgb(0.02, 0.37, 0.27)
+    // ── 6. ISI / BODY SURAT ────────────────────────────────────────────────
+    const bodyStartY = height - 450;
+    bodyLines.forEach((line, i) => {
+      page.drawText(line, { x: 60, y: bodyStartY - (i * 16), size: 11, font: fontRegular, color: black });
     });
 
-    // Stamp placeholder box
-    page.drawRectangle({
-      x: 350,
-      y: sigY - 80,
-      width: 140,
-      height: 50,
-      borderColor: rgb(0.02, 0.37, 0.27),
-      borderWidth: 1,
-      color: rgb(0.95, 0.98, 0.96)
-    });
-    page.drawText('[ CAP & TTD DIGITAL ]', {
-      x: 360,
-      y: sigY - 58,
-      size: 9,
-      font: fontBold,
-      color: rgb(0.02, 0.37, 0.27)
-    });
+    // ── 7. KALIMAT PENUTUP ─────────────────────────────────────────────────
+    const penutupY = bodyStartY - (bodyLines.length * 16) - 22;
+    page.drawText('Demikian Surat Keterangan ini dibuat dengan sebenarnya untuk dipergunakan', { x: 60, y: penutupY,      size: 11, font: fontRegular, color: black });
+    page.drawText('sebagaimana mestinya.',                                                      { x: 60, y: penutupY - 16, size: 11, font: fontRegular, color: black });
 
-    page.drawText('SUDARMANTO, S.Sos.', {
-      x: 350,
-      y: sigY - 95,
-      size: 11,
-      font: fontBold,
-      color: rgb(0.1, 0.1, 0.1)
-    });
+    // ── 8. BLOK TANDA TANGAN ──────────────────────────────────────────────
+    const sigX = 345;
+    const sigY = penutupY - 56;
+    page.drawText(`Banjarejo, ${letterData.tanggal}`, { x: sigX, y: sigY,       size: 11, font: fontRegular, color: black });
+    page.drawText('An. Kepala Desa Banjarejo',          { x: sigX, y: sigY - 18,  size: 11, font: fontRegular, color: black });
+    page.drawText('Sekretaris Desa',                    { x: sigX, y: sigY - 34,  size: 11, font: fontRegular, color: black });
+    const namaW = fontBold.widthOfTextAtSize('SUDARMANTO, S.Sos.', 11);
+    page.drawText('SUDARMANTO, S.Sos.',                 { x: sigX, y: sigY - 112, size: 11, font: fontBold,    color: black });
+    page.drawLine({ start: { x: sigX, y: sigY - 114 }, end: { x: sigX + namaW, y: sigY - 114 }, thickness: 0.7, color: black });
 
     const pdfBytes = await pdfDoc.save();
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="Surat_Resmi_${letterData.nomorPelacakan}.pdf"`);
+    res.setHeader('Content-Disposition', `inline; filename="Surat_${letterData.jenisLayanan.replace(/ /g,'_')}_${nomorSurat.replace(/\//g,'-')}.pdf"`);
     return res.send(Buffer.from(pdfBytes));
   } catch (error) {
     console.error('Error generating PDF:', error);
     return res.status(500).send('Gagal membuat PDF Surat Resmi.');
   }
 });
+
 
 export default router;
