@@ -123,9 +123,9 @@ router.get('/me', verifyTokenMiddleware, async (req, res) => {
  * @route   PUT /api/auth/change-password
  * @desc    Ubah password admin yang sedang aktif
  */
-router.put('/change-password', verifyTokenMiddleware, async (req, res) => {
+const handleChangePassword = async (req, res) => {
   try {
-    const { currentPassword, newPassword } = req.body;
+    const { currentPassword, newPassword, username } = req.body;
 
     if (!currentPassword || !newPassword) {
       return res.status(400).json({
@@ -141,7 +141,20 @@ router.put('/change-password', verifyTokenMiddleware, async (req, res) => {
       });
     }
 
-    const [rows] = await pool.query('SELECT * FROM admin_users WHERE id = ?', [req.user.id]);
+    let rows = [];
+    if (req.user && req.user.id) {
+      const [userRows] = await pool.query('SELECT * FROM admin_users WHERE id = ?', [req.user.id]);
+      rows = userRows;
+    } else if (username) {
+      const [userRows] = await pool.query('SELECT * FROM admin_users WHERE username = ?', [username.trim()]);
+      rows = userRows;
+    } else {
+      return res.status(401).json({
+        success: false,
+        message: 'Akses ditolak. Silakan login terlebih dahulu.',
+      });
+    }
+
     if (rows.length === 0) {
       return res.status(404).json({
         success: false,
@@ -160,19 +173,29 @@ router.put('/change-password', verifyTokenMiddleware, async (req, res) => {
     }
 
     const newHash = await bcrypt.hash(newPassword, 10);
-    await pool.query('UPDATE admin_users SET password_hash = ? WHERE id = ?', [newHash, req.user.id]);
+    await pool.query('UPDATE admin_users SET password_hash = ? WHERE id = ?', [newHash, admin.id]);
 
     return res.json({
       success: true,
-      message: 'Password berhasil diperbarui.',
+      message: 'Password berhasil diperbarui. Silakan gunakan password baru saat login berikutnya.',
     });
   } catch (error) {
     console.error('Error changing admin password:', error);
     return res.status(500).json({
       success: false,
-      message: 'Gagal memperbarui password.',
+      message: 'Gagal mengubah password.',
     });
   }
-});
+};
+
+router.put('/change-password', (req, res, next) => {
+  if (req.headers.authorization) return verifyTokenMiddleware(req, res, next);
+  next();
+}, handleChangePassword);
+
+router.post('/change-password', (req, res, next) => {
+  if (req.headers.authorization) return verifyTokenMiddleware(req, res, next);
+  next();
+}, handleChangePassword);
 
 export default router;

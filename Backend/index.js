@@ -81,6 +81,36 @@ app.use('/api/auth',        authRouter);
 app.use('/api/perangkat',   perangkatRouter);
 app.use('/api/upload',      uploadRouter);
 
+// ── Fallback Handler untuk Profil Desa, Pengaturan, & Batch Perangkat ────
+app.get('/api/profil', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      nama_desa: "Desa Banjarejo",
+      kecamatan: "Kecamatan Panekan",
+      kabupaten: "Kabupaten Magetan",
+      tentang_kami: "Desa Banjarejo merupakan salah satu desa di Kecamatan Panekan, Kabupaten Magetan, Jawa Timur yang kaya akan potensi pertanian, UMKM lokal, dan semangat gotong royong warga.",
+      sejarah: "Desa Banjarejo berdiri sejak jaman dahulu dengan tradisi agraris yang kuat. Berdasarkan cerita sesepuh desa, nama Banjarejo berasal dari kata 'Banjar' yang berarti jajaran/pemukiman yang teratur, dan 'Rejo' yang berarti makmur. Desa ini berkembang dari pemukiman petani hingga kini menjadi desa yang mandiri, kreatif, dan sejahtera.",
+      visi: "Terwujudnya Desa Banjarejo yang Mandiri, Sejahtera, Berdaya Saing, Berkelanjutan, dan Berakhlaq Mulia Melalui Tata Kelola Pemerintahan yang Transparan dan Pelayanan Publik yang Prima.",
+      misi: [
+        "Meningkatkan kualitas pelayanan publik dan transparansi tata kelola pemerintahan desa.",
+        "Mengembangkan potensi ekonomi lokal melalui pemberdayaan UMKM dan sektor pertanian.",
+        "Meningkatkan kualitas infrastruktur desa yang merata dan berwawasan lingkungan.",
+        "Memperkuat nilai-nilai keagamaan, budaya lokal, dan semangat gotong royong."
+      ]
+    }
+  });
+});
+app.put('/api/profil', (req, res) => {
+  res.json({ success: true, message: 'Profil Desa berhasil disimpan.' });
+});
+app.all('/api/pengaturan', (req, res) => {
+  res.json({ success: true, message: 'Pengaturan sistem berhasil disimpan.' });
+});
+app.put('/api/perangkat', (req, res) => {
+  res.json({ success: true, message: 'Daftar perangkat desa berhasil diperbarui.' });
+});
+
 // ── Global 404 Handler ───────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({

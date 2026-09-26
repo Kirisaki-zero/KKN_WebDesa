@@ -551,9 +551,10 @@ router.put('/admin/:id/status', verifyTokenMiddleware, async (req, res) => {
  * @desc    Generate Official Village Letter PDF — Layout Kop Surat Resmi Desa Banjarejo
  */
 router.get('/pdf/:id', async (req, res) => {
-  const authHeader  = req.headers.authorization;
+  const authHeader   = req.headers.authorization;
   const trackingResi = req.query.resi;
-  if (!authHeader && !trackingResi) {
+  const queryToken   = req.query.token;
+  if (!authHeader && !trackingResi && !queryToken) {
     return res.status(403).json({
       success: false,
       message: 'Akses ditolak. Nomor resi pelacakan atau otentikasi admin diperlukan untuk mengunduh berkas surat.'
