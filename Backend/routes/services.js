@@ -737,11 +737,29 @@ router.get('/pdf/:id', async (req, res) => {
     const sigX = 345;
     const sigY = penutupY - 56;
     page.drawText(`Banjarejo, ${letterData.tanggal}`, { x: sigX, y: sigY,       size: 11, font: fontRegular, color: black });
-    page.drawText('An. Kepala Desa Banjarejo',          { x: sigX, y: sigY - 18,  size: 11, font: fontRegular, color: black });
-    page.drawText('Sekretaris Desa',                    { x: sigX, y: sigY - 34,  size: 11, font: fontRegular, color: black });
-    const namaW = fontBold.widthOfTextAtSize('SUDARMANTO, S.Sos.', 11);
-    page.drawText('SUDARMANTO, S.Sos.',                 { x: sigX, y: sigY - 112, size: 11, font: fontBold,    color: black });
-    page.drawLine({ start: { x: sigX, y: sigY - 114 }, end: { x: sigX + namaW, y: sigY - 114 }, thickness: 0.7, color: black });
+    page.drawText('Kepala Desa Banjarejo',              { x: sigX, y: sigY - 18,  size: 11, font: fontRegular, color: black });
+
+    // Sisipkan Gambar Tanda Tangan Resmi
+    try {
+      const ttdPath = path.join(__dirname, '../public/ttd_desa.png');
+      if (fs.existsSync(ttdPath)) {
+        const ttdBytes = fs.readFileSync(ttdPath);
+        const ttdImg   = await pdfDoc.embedPng(ttdBytes);
+        page.drawImage(ttdImg, {
+          x: sigX + 5,
+          y: sigY - 90,
+          width: 115,
+          height: 65,
+        });
+      }
+    } catch (ttdErr) {
+      console.warn('Fallback TTD gambar:', ttdErr.message);
+    }
+
+    const namaPejabat = 'JANTI';
+    const namaW = fontBold.widthOfTextAtSize(namaPejabat, 11);
+    page.drawText(namaPejabat,                          { x: sigX, y: sigY - 98,  size: 11, font: fontBold,    color: black });
+    page.drawLine({ start: { x: sigX, y: sigY - 100 }, end: { x: sigX + namaW, y: sigY - 100 }, thickness: 0.7, color: black });
 
     const pdfBytes = await pdfDoc.save();
 
